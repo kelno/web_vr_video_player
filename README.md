@@ -1,5 +1,8 @@
 # Web VR video player for 180° videos.
 
+## If you liked it you can support my work
+[!["Buy Me A Coffee"](https://raw.githubusercontent.com/michal-repo/random_stuff/refs/heads/main/bmac_small.png)](https://buymeacoffee.com/michaldev)
+
 ## Licenses
 
 ### Source code Licensed under MIT License
