@@ -224,7 +224,19 @@ If videos or player can't be loaded make sure that this app files are owned by w
 
 ## Building
 Save changes and run:
+
+
+
 ### Development mode
-`npm run build-dev`
+
+```
+npm install
+npm run build-dev
+```
+
 ### Production mode
-`npm run build`
+
+```
+npm install
+npm run build
+```
