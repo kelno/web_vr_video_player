@@ -1,93 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+    />
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <title>VR player</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+      }
 
-        body {
-            overflow: hidden;
-        }
+      body {
+        overflow: hidden;
+      }
 
-        .loader {
-            position: absolute;
-            right: 0px;
-            bottom: 20%;
-            padding: 5px;
-            font-size: 15px;
-            background-color: #d4d4d4;
-            color: rgb(0, 0, 0);
-            width: 20%;
-            font-family: Arial, Helvetica, sans-serif;
-        }
+      .loader {
+        position: absolute;
+        right: 0px;
+        bottom: 20%;
+        padding: 5px;
+        font-size: 15px;
+        background-color: #d4d4d4;
+        color: rgb(0, 0, 0);
+        width: 20%;
+        font-family: Arial, Helvetica, sans-serif;
+      }
 
-        .loader pre {
-            color: rgb(20, 63, 129);
-        }
+      .loader pre {
+        color: rgb(20, 63, 129);
+      }
 
-        .loader input {
-            margin-top: 5px;
-            width: 100%;
-        }
+      .loader input {
+        margin-top: 5px;
+        width: 100%;
+      }
 
-        .btn {
-            background-color: #19abff;
-            border: none;
-            color: white;
-            padding: 5px;
-            width: 100%;
-            margin-top: 5px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-        }
+      .btn {
+        background-color: #19abff;
+        border: none;
+        color: white;
+        padding: 5px;
+        width: 100%;
+        margin-top: 5px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+      }
 
-        .loader .close {
-            width: 35px;
-            position: absolute;
-            top: -34px;
-            right: 0;
-        }
+      .loader .close {
+        width: 35px;
+        position: absolute;
+        top: -34px;
+        right: 0;
+      }
 
-        .open {
-            position: absolute;
-            width: 135px;
-            right: 0;
-            bottom: 25px;
-            font-family: Arial, Helvetica, sans-serif;
-            visibility: hidden;
-        }
+      .open {
+        position: absolute;
+        width: 135px;
+        right: 0;
+        bottom: 25px;
+        font-family: Arial, Helvetica, sans-serif;
+        visibility: hidden;
+      }
 
-        footer {
-            position: absolute;
-            bottom: 0px;
-            right: 0px;
-            justify-content: center;
-            padding: 5px;
-            font-size: 12px;
-            height: 15px;
-            max-height: 15px !important;
-            background-color: #d4d4d4;
-            color: rgb(0, 0, 0);
-        }
+      footer {
+        position: absolute;
+        bottom: 0px;
+        right: 0px;
+        justify-content: center;
+        padding: 5px;
+        font-size: 12px;
+        height: 15px;
+        max-height: 15px !important;
+        background-color: #d4d4d4;
+        color: rgb(0, 0, 0);
+      }
     </style>
+  </head>
 
-</head>
-
-<body>
+  <body>
     <div id="three_scene"></div>
     <video id="video" crossorigin="anonymous" playsinline style="display: none">
-        <source id="video_src" src="" type="video/mp4" />
+      <source id="video_src" src="" type="video/mp4" />
     </video>
-    <div class="loader" id="loader">
+    <!-- <div class="loader" id="loader">
         <button class="close btn" onclick="document.getElementById('loader').style.visibility = 'hidden';document.getElementById('open_loader').style.visibility = 'visible';">X</button>
         <p>
             To load your file, your web server needs to return CORS headers.<br />
@@ -112,37 +113,12 @@
                 href="https://www.flaticon.com/authors/freepik">freepik</a>, &nbsp;from&nbsp;<a target="_blank"
                 href="http://www.flaticon.com/">www.flaticon.com</a>
         </p>
-    </footer>
-</body>
-<script>
+    </footer> -->
+  </body>
+  <script>
     async function loadFromURL() {
-        try {
-            const JL = new JsonLoader(
-                document.getElementById("json_url").value,
-                true,
-                document.getElementById("json_name").value
-            );
-            await JL.load();
-            if (JL.status == "error") {
-                throw new Error(JL.error);
-            } else {
-                document.getElementById("json_url").value = "";
-                document.getElementById("json_name").value = "";
-                alert("Loaded, you can refresh sources.");
-            }
-        } catch (error) {
-            alert(error);
-        }
+      console.log("NYI");
     }
-</script>
-<script type="module">
-    import { JsonLoader } from "./dist/jsonLoader.js";
-    try {
-        new JsonLoader("files.json").load();
-    } catch (error) {
-        console.warn(error);
-    }
-</script>
-<script defer src="dist/index.js"></script>
-
+  </script>
+  <script defer src="dist/index.js"></script>
 </html>

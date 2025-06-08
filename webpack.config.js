@@ -22,33 +22,12 @@ module.exports = (env) => {
         },
       ],
     },
-  };
-
-  const jsonLoaderConfig = {
-    entry: {
-      jsonLoader: "./src/jsonLoader.js",
-    },
-    mode: isDevelopment ? "development" : "production",
-    // devtool: isDevelopment ? "source-map" : false,
-    output: {
-      filename: "[name].js",
-      path: path.resolve(__dirname, "dist"),
-      library: {
-        type: "module",
+    resolve: {
+      alias: {
+        three: path.resolve(__dirname, "node_modules/three"),
       },
     },
-    experiments: {
-      outputModule: true,
-    },
-    module: {
-      rules: [
-        {
-          test: /\.(png|svg|jpg|gif)$/,
-          use: ["file-loader"],
-        },
-      ],
-    },
   };
 
-  return [indexConfig, jsonLoaderConfig];
+  return [indexConfig];
 };

@@ -16,6 +16,7 @@ import SourcesSelectorPanel from "./sourceSelector.js";
 
 import FontJSON from "../assets/fonts/Roboto-Regular-msdf.json";
 import FontImage from "../assets/fonts/Roboto-Regular.png";
+import { JsonLoader } from "./jsonLoader.js";
 
 export let scene,
   camera,
@@ -97,6 +98,10 @@ window.addEventListener("touchend", () => {
 //
 
 function init() {
+  loadJsonLoader().then(() => {
+    console.debug("loadJsonLoader finished");
+  });
+
   ////////////////////////
   //  Basic Three Setup
   ////////////////////////
@@ -946,4 +951,10 @@ let Extensions = { registered: [] };
 
 export default function registerExtension(name) {
   Extensions.registered.push(name);
+}
+
+async function loadJsonLoader() {
+  console.debug("Loading JsonLoader...");
+  const jsonLoader = new JsonLoader("files.json");
+  await jsonLoader.load();
 }
