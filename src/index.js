@@ -673,7 +673,7 @@ export function playbackChange(is_active = false, screen_type = null) {
             content: Helpers.getWordFromLang("side_by_side"),
           });
           // Add default zoom in when playback starts
-          ScreenManager.zoom("in", 5.0);
+          ScreenManager.zoom("in", 100.0);
           break;
       }
 
