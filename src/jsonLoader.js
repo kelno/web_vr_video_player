@@ -15,28 +15,34 @@ export class JsonLoader {
   }
 
   async load() {
-    if (typeof this.json_file === "string") {
-      await fetch(this.json_file)
-        .then((response) => response.json())
-        .then((json) => {
-          registerExtension({
-            type: "json_file",
-            name: this.name,
-            verifyVideoSRC: this.verifyVideoSRC,
-            data: json,
-          });
-          this.data = json;
-          this.status = "success";
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          this.status = "error";
-          this.error = error;
-        });
-    } else {
+    if (typeof this.json_file !== "string") {
       this.error = "Error: `json_file` must be valid string";
       this.status = "error";
       console.error(this.error);
+      return;
     }
+    await fetch(this.json_file)
+      //check if response is ok
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response;
+      })
+      .then((json) => {
+        registerExtension({
+          type: "json_file",
+          name: this.name,
+          verifyVideoSRC: this.verifyVideoSRC,
+          data: json,
+        });
+        this.data = json;
+        this.status = "success";
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        this.status = "error";
+        this.error = error;
+      });
   }
 }

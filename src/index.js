@@ -954,7 +954,7 @@ export default function registerExtension(name) {
 }
 
 async function loadJsonLoader() {
-  console.debug("Loading JsonLoader...");
-  const jsonLoader = new JsonLoader("files.json");
+  const jsonFile = "files.json";
+  const jsonLoader = new JsonLoader(jsonFile);
   await jsonLoader.load();
 }
