@@ -942,7 +942,7 @@ if (WebGL.isWebGLAvailable()) {
   document.body.appendChild(warning);
 }
 
-export let Extensions = { registered: [] };
+let Extensions = { registered: [] };
 
 export default function registerExtension(name) {
   Extensions.registered.push(name);

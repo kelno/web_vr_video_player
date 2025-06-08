@@ -4,9 +4,8 @@
   "description": "",
   "main": "index.html",
   "scripts": {
-    "build": "webpack --config webpack.config.js",
-    "build-json-loader": "webpack --config webpack.jsonloader.config.js",
-    "build-dev": "webpack --config webpack.development.config.js",
+    "build": "webpack --env production",
+    "build-dev": "webpack --env development",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "michal-repo",

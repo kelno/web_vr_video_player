@@ -1,6 +1,6 @@
 import registerExtension from "./index.js";
 
-export default class JsonLoader {
+export class JsonLoader {
   json_file;
   data;
   verifyVideoSRC;

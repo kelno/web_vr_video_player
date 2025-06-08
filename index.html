@@ -80,8 +80,6 @@
         }
     </style>
 
-    <script defer src="dist/index.js"></script>
-    <script defer src="dist/jsonLoader.js"></script>
 </head>
 
 <body>
@@ -137,12 +135,14 @@
         }
     }
 </script>
-<script defer type="module">
+<script type="module">
+    import { JsonLoader } from "./dist/JsonLoader.js";
     try {
         new JsonLoader("files.json").load();
     } catch (error) {
         console.warn(error);
     }
 </script>
+<script defer src="dist/index.js"></script>
 
 </html>
