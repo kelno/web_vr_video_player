@@ -1126,7 +1126,8 @@ export class FileBrowserPanel {
                         }
                         this.viewGeneratorInProgress = false;
                     })
-                    .catch(() => {
+                    .catch((error) => {
+                        console.error("Failed to load thumbnail:", thumb);
                         this.viewGeneratorThumbs[
                             this.viewGeneratorThumbsIterator
                         ].add(

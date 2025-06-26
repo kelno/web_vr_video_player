@@ -1,10 +1,8 @@
 [videos]
-; full path to videos folder
-videos_location=/mnt/hdd/videos
-; folder inside `videos_location` where vr videos are located
-videos_folder=vr
-; folder inside `videos_location` where Thumbnails will be saved
-thumbnails_folder=thumbnails
-
-; path to videos reachable via web server (eg. project is in /var/www/html/vr_player and videos are in /var/www/html/videos then use ../videos)
-videos_relative_path_to_player=../videos
+;  All those paths need to be accessible on the same partition. You can use symlink to help that if needed.
+; full path to the videos directory
+videos_path=/mnt/hdd/videos
+; full path to the thumbnails directory, if any
+thumbnails_path=/mnt/hdd/thumbnails
+; Full path to the video player directory. This will be used to generate the relative paths in the JSON file.
+player_public_path=/mnt/hdd/web_vr_video_player

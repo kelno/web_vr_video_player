@@ -57,10 +57,14 @@ def get_file_timestamps(filepath):
     }
 
 def generate_category_entries():
-    videos_dir = Path(config['videos']['videos_location']) / config['videos']['videos_folder']
-    thumbnails_dir = Path(config['videos']['videos_location']) / config['videos']['thumbnails_folder']
-    videos_relative_path = str(config['videos']['videos_relative_path_to_player'])
+    videos_dir = Path(config['videos']['videos_path'])
+    thumbnails_dir = Path(config['videos']['thumbnails_path'])
+    player_public_path = Path(config['videos']['player_public_path'])
     category_map = defaultdict(list)
+
+    # Check if player_public_path is on the same disk as videos_dir
+    if videos_dir.drive != player_public_path.drive:
+        raise ValueError(f"player_public_path ({player_public_path}) and videos_path ({videos_dir}) are not on the same disk. Cannot compute relative path.")
 
     if not os.path.exists(videos_dir):
         raise FileNotFoundError(f"Videos directory not found at {os.path.abspath(videos_dir)}")
@@ -70,22 +74,23 @@ def generate_category_entries():
             if is_video_file(file):
                 full_path = os.path.join(root, file)
                 rel_path = os.path.relpath(full_path, start=videos_dir)
-                rel_dir = os.path.dirname(rel_path)
 
                 timestamps = get_file_timestamps(full_path)
 
                 # Use directory name as category, or "Uncategorized" for root
-                category_name = os.path.basename(rel_dir) if rel_dir else "Uncategorized"
+                category_name = os.path.basename(root) if root != str(videos_dir) else "!Uncategorized"
 
-                thumbnail_path = (thumbnails_dir / rel_path.replace(os.path.sep, '/')).with_suffix('.jpg')
+                thumbnail_path = (thumbnails_dir / rel_path).with_suffix('.jpg')
                 thumbnail_exists = thumbnail_path.exists()
 
-                src = f"{videos_relative_path}/{rel_path.replace(os.path.sep, '/')}"
+                # Compute relative path for src
+                src = os.path.relpath(full_path, start=player_public_path).replace(os.sep, '/')
                 print(f"Processing file: {file}")
                 print(f"Category: {category_name}")
                 print(f"src: {src}")
-                
-                thumb_rel_path = f"{videos_relative_path}/{str(thumbnail_path.relative_to(thumbnails_dir).as_posix())}" if thumbnail_exists else ""
+
+                # Compute relative path for thumbnail
+                thumb_rel_path = os.path.relpath(thumbnail_path, start=player_public_path).replace(os.sep, '/') if thumbnail_exists else ""
                 print(f"Thumbnail path: {thumb_rel_path}")
 
                 entry = {

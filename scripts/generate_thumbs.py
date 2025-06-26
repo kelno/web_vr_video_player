@@ -4,18 +4,13 @@ import subprocess
 from pathlib import Path
 from common import is_video_file
 
-
 config = configparser.ConfigParser()
 config_path = os.path.join(os.path.dirname(__file__), '../config.ini')
 print(f"Reading config from: {config_path}")
 config.read(config_path)
 
-videos_location = Path(config['videos']['videos_location'])
-videos_folder = config['videos']['videos_folder']
-thumbnails_folder = config['videos']['thumbnails_folder']
-
-videos_path = videos_location / videos_folder
-thumbnails_path = videos_location / thumbnails_folder
+videos_path = Path(config['videos']['videos_path'])
+thumbnails_path = Path(config['videos']['thumbnails_path'])
 
 print(f"Videos path: {videos_path}")
 print(f"Thumbnails path: {thumbnails_path}")
@@ -58,4 +53,5 @@ for dirpath, dirnames, filenames in os.walk(videos_path):
                     print(f"Failed to generate thumbnail for: {video_file}")
             else:
                 print(f"Thumbnail already exists for: {video_file}")
+                
 print("All done!")
