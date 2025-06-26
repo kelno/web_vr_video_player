@@ -1,6 +1,7 @@
 Fork changes:
 - Misc changes to file loading, trying to make it more reliable. It's still a mess but it works for me now.
-- Changed the generations scripts and related config. Some previous features dropped.
+- Cleaned up build system.
+- Changed the generations scripts and related config. Some previous features dropped. The files generation script will auto generate categories based on the directories the videos are in.
 - Changed default zoom to 180 for SBS.
 
 ---
@@ -109,16 +110,14 @@ Supported tags:
 [Extensions](https://github.com/michal-repo/web_vr_video_player_extensions)
 
 ## Generating your own JSON file with video sources
-Player is using locally stored JSON file with video sources. It's configured in `index.html`, where you can provide your JSON file name:
-```
-<script defer type="module">
-    try {
-        new JsonLoader("files.json").load();
-    } catch (error) {
-        console.warn(error);
-    }
-</script>
-```
+Player is using locally stored "files.json" with video sources.
+To use the included generation script, Configure `config.ini`, then generate with `generate_json.sh`.
+The files generation script will auto generate categories based on the directories the videos are in.
+
+## Generating thumbnails
+Configure `config.ini`, then generate with `generate_thumbnails.sh`. 
+ffmpeg & ffprobe need to be in path.
+ 
 ### Structure for JSON file
 
 ```
@@ -230,8 +229,6 @@ If videos or player can't be loaded make sure that this app files are owned by w
 ![Print-screen-3](https://github.com/michal-repo/web_vr_video_player/blob/main/examples/Screenshot_VR_player_3.png?raw=true)
 
 ## Building
-Save changes and run:
-
 
 ### Development mode
 
@@ -246,6 +243,3 @@ npm run build-dev
 npm install
 npm run build
 ```
-
-FIXME: this nukes the loader js?
-also, how to regen the index.js.map?
