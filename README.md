@@ -1,3 +1,10 @@
+Fork changes:
+- Misc changes to file loading, trying to make it more reliable. It's still a mess.
+- Changed the generations scripts and related config. Some previous features dropped.
+- Changed default zoom to 180 for SBS.
+
+---
+
 # Web VR video player for 180° videos.
 
 ## If you liked it you can support my work
