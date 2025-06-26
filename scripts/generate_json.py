@@ -1,26 +1,15 @@
-#!/usr/bin/python3
-
 import os
 import json
-import configparser
-import sys
-import urllib.parse
 from datetime import datetime
-import sqlite3
-import subprocess
-import pipes
-
-connection = sqlite3.connect("videos.db")
-cursor = connection.cursor()
-
-cursor.execute("CREATE TABLE IF NOT EXISTS videos(id INTEGER PRIMARY KEY AUTOINCREMENT, fullfile, title, extension, codec_name, frame_height, frame_width, framerate)")
+from collections import defaultdict
+import sys
+import configparser
 
 if not len(sys.argv) > 1:
     print("Usage: pass config ini file as first parameter, you can force metadata rescan by setting second parameter to true (false by default)\neg.\npython3 generateJson.py config.ini\npython3 generateJson.py config.ini true")
     quit()
 
 configFile = sys.argv[1]
-
 
 if not os.path.isfile(configFile):
     print("Passed ini file do not exist")
@@ -29,113 +18,105 @@ if not os.path.isfile(configFile):
 config = configparser.ConfigParser()
 config.read(configFile)
 
-out_files = {"main dir": {"name": "main dir", "list": []}}
+if not os.path.isfile(configFile):
+    print("Passed ini file do not exist")
+    quit()
 
-for (root, dirs, files) in os.walk(config['videos']['videos_relative_path']+"/"+config['videos']['videos_folder']):
-    for dir in dirs:
-        directory = (os.path.join(root, dir))
-        dumpDir = directory.replace(
-            config['videos']['videos_relative_path'] + "/" + config['videos']['videos_folder'] + "/", "")
-        out_files[dumpDir] = {"name": dumpDir, "list": []}
-    for file in sorted(files, key=str.casefold):
-        title = ""
-        extension = ""
-        date = ""
-        if ".mp4" in file[-4:]:
-            title = file[:-4]
-            extension = file[-4:]
+if not os.path.isfile(configFile):
+    print("Passed ini file do not exist")
+    quit()
 
-            fullfile = (os.path.join(root, file))
-            date = os.path.getmtime(fullfile)
 
-            if "_SCREEN" in title[-7:]:
-                # DB
-                codec_name = ""
-                frame_height = ""
-                frame_width = ""
-                framerate = ""
-                existing_entry_query = cursor.execute(
-                    "SELECT frame_height, frame_width FROM videos WHERE fullfile = :fullfile", {
-                        "fullfile": fullfile,
-                    })
-                existing_entry = existing_entry_query.fetchone()
-                if existing_entry is None:
-                    cmd = [
-                        "ffprobe -v quiet -print_format json -show_format -show_streams " + pipes.quote(fullfile)]
-                    result = subprocess.run(
-                        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-                    metadataJson = result.stdout
-                    d = json.loads(metadataJson)
-                    streams = d.get("streams", [])
-                    for stream in streams:
-                        if "codec_type" in stream:
-                            if stream["codec_type"] == "video":
-                                codec_name = stream["codec_name"]
-                                framerate = round(
-                                    eval(stream["avg_frame_rate"]))
-                                frame_height = stream["height"]
-                                frame_width = stream["width"]
-                                cursor.execute("insert into videos(fullfile, title, extension, codec_name, frame_height, frame_width, framerate) values (?, ?, ?, ?, ?, ?, ?)", (
-                                    fullfile, title, extension, codec_name, frame_height, frame_width, framerate))
-                                connection.commit()
-                else:
-                    frame_height = existing_entry[0]
-                    frame_width = existing_entry[1]
-                ##
+def is_video_file(filename):
+    video_extensions = ('.mp4', '.mkv', '.avi', '.mov', '.webm')
+    return filename.lower().endswith(video_extensions)
 
-            entry = fullfile.replace(
-                config['videos']['videos_relative_path'], "")
-            expected_img = config['videos']['videos_relative_path'] + \
-                "/"+config['videos']['thumbnails_folder']+entry+".jpg"
-            img = expected_img if os.path.isfile(expected_img) else ""
+def clean_filename(filename):
+    # Remove common prefixes and file extensions
+    prefixes = ('SpankBang.com_', 'vrporncom_', 'WankzVR - ', ' - ')
+    for prefix in prefixes:
+        if filename.startswith(prefix):
+            filename = filename[len(prefix):]
 
-            subDir = fullfile.replace(
-                config['videos']['videos_relative_path'] + "/" + config['videos']['videos_folder'] + "/", "")
-            subDir = subDir.replace("/" + file, "")
+    # Remove file extension
+    filename = os.path.splitext(filename)[0]
 
-            if not subDir in out_files:
-                subDir = "main dir"
+    # Replace special characters with spaces
+    replacements = {'+': ' ', '_': ' ', '__': ' ', '  ': ' '}
+    for old, new in replacements.items():
+        filename = filename.replace(old, new)
 
-            if "_TB" in title[-3:]:
-                screen_type = "tb"
-            elif "_TB_SCREEN" in title[-10:]:
-                screen_type = "tb_screen"
-            elif "_SCREEN" in title[-7:]:
-                screen_type = "screen"
-            elif "_2D_180" in title[-7:]:
-                screen_type = "sphere180"
-            elif "_2D_360" in title[-7:]:
-                screen_type = "sphere360"
-            elif "_360" in title[-4:]:
-                screen_type = "360"
-            else:
-                screen_type = "sbs"
+    # Title case except for resolution indicators
+    parts = []
+    for part in filename.split():
+        if part.lower() in ('4k', '1080p', '180', '6k', '1920p'):
+            parts.append(part)
+        else:
+            parts.append(part.title())
 
-            if screen_type == "screen" or screen_type == "tb_screen":
-                out_files[subDir]["list"].append(
-                    {"name": title,
-                     "src": urllib.parse.quote(fullfile),
-                     "thumbnail": urllib.parse.quote(img),
-                     "screen_type": screen_type,
-                     "frame_height": frame_height,
-                     "frame_width": frame_width,
-                     "date": datetime.fromtimestamp(date).strftime('%Y-%m-%d %H:%M:%S'),
-                     "epoch": date
-                     })
-            else:
-                out_files[subDir]["list"].append(
-                    {"name": title,
-                     "src": urllib.parse.quote(fullfile),
-                     "thumbnail": urllib.parse.quote(img),
-                     "screen_type": screen_type,
-                     "date": datetime.fromtimestamp(date).strftime('%Y-%m-%d %H:%M:%S'),
-                     "epoch": date
-                     })
+    return ' '.join(parts).strip()
 
-cursor.close()
-out_json = []
-for entry in out_files:
-    if len(out_files[entry]["list"]) > 0:
-        out_json.append(out_files[entry])
+def get_file_timestamps(filepath):
+    mtime = os.path.getmtime(filepath)
+    dt = datetime.fromtimestamp(mtime)
+    return {
+        "date": dt.strftime("%Y-%m-%d %H:%M:%S"),
+        "epoch": str(mtime)
+    }
 
-print(json.dumps({'videos': out_json}))
+def generate_category_entries():
+    videos_dir = config['videos']['videos_location']
+    category_map = defaultdict(list)
+
+    if not os.path.exists(videos_dir):
+        raise FileNotFoundError(f"Videos directory not found at {os.path.abspath(videos_dir)}")
+
+    for root, _, files in os.walk(videos_dir):
+        for file in files:
+            if is_video_file(file):
+                full_path = os.path.join(root, file)
+                rel_path = os.path.relpath(full_path, start=videos_dir)
+                rel_dir = os.path.dirname(rel_path)
+
+                # Get file modification timestamps
+                timestamps = get_file_timestamps(full_path)
+
+                # Use directory name as category, or "Uncategorized" for root
+                category_name = os.path.basename(rel_dir) if rel_dir else "Uncategorized"
+
+                entry = {
+                    "name": clean_filename(file),
+                    "src": f"../videos/{rel_path.replace(os.path.sep, '/')}",
+                    "thumbnail": "",
+                    "screen_type": "sbs",
+                    "date": timestamps["date"],
+                    "epoch": timestamps["epoch"]
+                }
+                category_map[category_name].append(entry)
+
+    return category_map
+
+def main():
+    try:
+        category_map = generate_category_entries()
+
+        video_data = {
+            "videos": [
+                {
+                    "name": category,
+                    "list": sorted(entries, key=lambda x: float(x["epoch"]), reverse=True)
+                } for category, entries in sorted(category_map.items())
+            ]
+        }
+
+        with open('files.json', 'w', encoding='utf-8') as f:
+            json.dump(video_data, f, indent=4, ensure_ascii=False)
+
+        print(f"files.json created successfully at {os.path.abspath('files.json')}")
+        print(f"Found {len(video_data['videos'])} categories with {sum(len(cat['list']) for cat in video_data['videos'])} total videos")
+
+    except Exception as e:
+        print(f"Error: {str(e)}")
+
+if __name__ == "__main__":
+    main()

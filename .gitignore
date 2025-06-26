@@ -2,4 +2,5 @@ releases
 files.json
 node_modules
 dist/*
-
+.idea/
+config.ini
