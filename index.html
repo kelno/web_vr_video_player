@@ -88,37 +88,6 @@
     <video id="video" crossorigin="anonymous" playsinline style="display: none">
       <source id="video_src" src="" type="video/mp4" />
     </video>
-    <!-- <div class="loader" id="loader">
-        <button class="close btn" onclick="document.getElementById('loader').style.visibility = 'hidden';document.getElementById('open_loader').style.visibility = 'visible';">X</button>
-        <p>
-            To load your file, your web server needs to return CORS headers.<br />
-            Install apache2 mod:
-        <pre>sudo a2enmod headers</pre>
-        <br />
-        Add CORS header to your videos directory (and place where json is
-        located if it's different):
-        <pre>&lt;Directory /var/www/html/videos&gt;<br>Header set Access-Control-Allow-Origin "*"<br>&lt;/Directory&gt;</pre>
-        <input placeholder="JSON url" id="json_url" />
-        <input placeholder="Name" id="json_name" />
-        <button onclick="loadFromURL()">Load</button>
-        </p>
-    </div>
-    <button class="open btn" id="open_loader" onclick="document.getElementById('loader').style.visibility = 'visible';document.getElementById('open_loader').style.visibility = 'hidden';">Loader</button>
-    <footer>
-        <p>
-            Icons made by &nbsp;<a target="_blank" href="https://www.flaticon.com/authors/nawicon">nawicon</a>, &nbsp;<a
-                target="_blank" href="https://www.flaticon.com/authors/alfanz">alfanz</a>, &nbsp;<a target="_blank"
-                href="https://www.flaticon.com/authors/ayub-irawan">ayub-irawan</a>, &nbsp;<a target="_blank"
-                href="https://www.flaticon.com/authors/us-and-up">us-and-up</a>, &nbsp;<a target="_blank"
-                href="https://www.flaticon.com/authors/freepik">freepik</a>, &nbsp;from&nbsp;<a target="_blank"
-                href="http://www.flaticon.com/">www.flaticon.com</a>
-        </p>
-    </footer> -->
   </body>
-  <script>
-    async function loadFromURL() {
-      console.log("NYI");
-    }
-  </script>
   <script defer src="dist/index.js"></script>
 </html>
