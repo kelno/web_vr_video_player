@@ -2,7 +2,7 @@ import os
 import configparser
 import subprocess
 from pathlib import Path
-from scripts.common import is_video_file
+from common import is_video_file
 
 
 config = configparser.ConfigParser()
@@ -37,7 +37,7 @@ for dirpath, dirnames, filenames in os.walk(videos_path):
     for filename in filenames:
         if is_video_file(filename):
             video_file = Path(dirpath) / filename
-            thumb_file = thumb_dir / f"{filename}.jpg"
+            thumb_file = Path(thumb_dir / filename).with_suffix(".jpg")
             if not thumb_file.exists():
                 print(f"Generating thumbnail for: {video_file}")
                 result = subprocess.run([

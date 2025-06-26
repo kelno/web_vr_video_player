@@ -4,6 +4,7 @@ videos_location=/mnt/hdd/videos
 ; folder inside `videos_location` where vr videos are located
 videos_folder=vr
 ; folder inside `videos_location` where Thumbnails will be saved
-thumbnails_folder=Thumbnails
+thumbnails_folder=thumbnails
+
 ; path to videos reachable via web server (eg. project is in /var/www/html/vr_player and videos are in /var/www/html/videos then use ../videos)
-videos_relative_path=../videos
+videos_relative_path_to_player=../videos

@@ -1,3 +1,4 @@
 #!/bin/bash
 
-python scripts/generate_thumbs.py config.ini
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+python "$SCRIPT_DIR/scripts/generate_thumbs.py" "$SCRIPT_DIR/config.ini"
