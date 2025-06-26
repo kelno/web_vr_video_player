@@ -1,5 +1,5 @@
 Fork changes:
-- Misc changes to file loading, trying to make it more reliable. It's still a mess.
+- Misc changes to file loading, trying to make it more reliable. It's still a mess but it works for me now.
 - Changed the generations scripts and related config. Some previous features dropped.
 - Changed default zoom to 180 for SBS.
 
