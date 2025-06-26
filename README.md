@@ -1,8 +1,14 @@
-Fork changes:
-- Misc changes to file loading, trying to make it more reliable. It's still a mess but it works for me now.
-- Cleaned up build system.
-- Changed the generations scripts and related config. Some previous features dropped. The files generation script will auto generate categories based on the directories the videos are in.
-- Changed default zoom to 180 for SBS.
+
+### Kelno's fork notes
+Forked from https://github.com/michal-repo/web_vr_video_player  
+Readme has been updated to reflect changes.  
+
+#### Changes
+- Misc changes to file loading, trying to make it more reliable. It's still a mess but it works for me now.  
+- Cleaned up build system.  
+- Rewritten the generation scripts and related config. Some previous features dropped for now.  
+- The files generation script will auto generate categories based on the directories the videos are in.  
+- Changed default zoom to 180 for SBS.  
 
 ---
 
@@ -91,12 +97,13 @@ Supported tags:
 [Extensions](https://github.com/michal-repo/web_vr_video_player_extensions)
 
 ## Generating your own JSON file with video sources
-Player is using locally stored "files.json" with video sources.
-To use the included generation script, Configure `config.ini`, then generate with `generate_json.sh`.
+
+Player is using locally stored "files.json" with video sources.  
+To use the included generation script, Configure `config.ini`, then generate with `generate_json.sh`.  
 The files generation script will auto generate categories based on the directories the videos are in.
 
 ## Generating thumbnails
-Configure `config.ini`, then generate with `generate_thumbnails.sh`. 
+Configure `config.ini`, then generate with `generate_thumbnails.sh`.   
 ffmpeg & ffprobe need to be in path.
  
 ### Structure for JSON file
