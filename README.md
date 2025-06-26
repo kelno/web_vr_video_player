@@ -62,48 +62,29 @@ Thumbstick:
 
 ## Requirements
 
-- Linux server with installed and configured web server including https (WebXR requires https)
-- Python 3 installed
-- FFMPEG installed (required if thumbnails generator will be used)
+- Web server configured for https (WebXR requires https)
+- Python 3
+- (optional) FFMPEG, to generate thumbnails
 
 ## Setup
 
 ### Using JSON solution and provided Python scripts
 
+- Copy `config.ini.example` to `config.ini`
+- Edit `config.ini`
 - Edit `config.ini` providing correct paths
+    All those paths need to be accessible on the same partition. You can use symlink to help that if needed.
 
-    `videos_location` => absolute path to folder containing videos folder and thumbnails folder (eg. for  `/media/videos` set this to `videos_location=/media/videos`)
-  
-    `videos_folder` => main folder where videos are located (eg. for /media/videos/vr set this to `videos_folder=vr`)
-  
-    `thumbnails_folder` => main folder where Thumbnails are located (eg. for /media/videos/thumbnails set this to `thumbnails_folder=thumbnails`)
-  
-    `videos_relative_path` => this is relative path from player folder to videos folder, must be inside www folder (eg. player is in `/var/www/html/web_vr_player` your videos are available via symlink from `/var/www/html/videos` then set this to `videos_relative_path=../videos`)
-  
-    To create symlink => 
-        
-        cd /var/www/html/
-        ln /media/videos videos
-
-- Make `init.sh` file executable `chmod u+x init.sh` and run it. This script downloads ini parser for bash
-- If you don't have Thumbnails generated for your videos and want to use them run `generate_thumbnails.sh` script
-- Finally run `generate_files_json.sh` script to generate `files.json` containing list of VR files for player
-
-Script can set screen type based on file name. Add one of following at the end of file name: `_TB` (Top-Bottom), `_SCREEN`. Default screen type is Side-by-Side.
+(needs reimplementation) Script can set screen type based on file name. Add one of following at the end of file name: `_TB` (Top-Bottom), `_SCREEN`. Default screen type is Side-by-Side.
 
 Supported tags:
 
-`_SCREEN` - normal 2D screen
-
-`_SBS` - Side by Side
-
-`_TB` - Top Bottom 180
-
-`_360` - Top Bottom 360
-
-`_2D_180` - fisheye 180, not VR (one lens)
-
-`_2D_360` - fisheye 360, not VR (one lens)
+- `_SCREEN` - normal 2D screen
+- `_SBS` - Side by Side
+- `_TB` - Top Bottom 180
+- `_360` - Top Bottom 360
+- `_2D_180` - fisheye 180, not VR (one lens)
+- `_2D_360` - fisheye 360, not VR (one lens)
 
 ### Extensions
 
