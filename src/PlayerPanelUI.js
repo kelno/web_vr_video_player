@@ -1091,11 +1091,26 @@ export class PlayerPanel {
     progressBarAndDuration() {
         if (Helpers.videoSrcExists()) {
             if (MAIN.hiddenSphere.buttonsVisible) {
+                const duration = MAIN.video.duration;
+
+                // A source can be selected before the browser has loaded its
+                // metadata. Do not pass a NaN width to ThreeMeshUI in that gap.
+                if (!Number.isFinite(duration) || duration <= 0) {
+                    this.progressBar.set({
+                        width: this.PROGRESSPANELMINWIDTH,
+                    });
+                    this.playbackLabelContainer.set({
+                        content: Helpers.getWordFromLang("not_available"),
+                    });
+                    this.videoCantEndBug = false;
+                    return;
+                }
+
                 let progressBarLength =
                     ((this.PROGRESSPANELMAXWIDTH -
                         (this.PROGRESSPANELMINWIDTH * 2 - 0.001)) *
                         ((MAIN.video.currentTime * 100) /
-                            MAIN.video.duration)) /
+                            duration)) /
                     100;
                 this.progressBar.set({
                     width:
@@ -1108,15 +1123,9 @@ export class PlayerPanel {
                 let result = playbackHelper.toISOString().substring(11, 19);
                 result += " / ";
                 playbackHelper = new Date(null);
-                if (MAIN.video.duration) {
-                    playbackHelper.setSeconds(MAIN.video.duration);
-                    result += playbackHelper.toISOString().substring(11, 19);
-                    this.playbackLabelContainer.set({ content: result });
-                } else {
-                    this.playbackLabelContainer.set({
-                        content: Helpers.getWordFromLang("not_available"),
-                    });
-                }
+                playbackHelper.setSeconds(duration);
+                result += playbackHelper.toISOString().substring(11, 19);
+                this.playbackLabelContainer.set({ content: result });
             }
 
             if (MAIN.video.ended == false) {
