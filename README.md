@@ -1,21 +1,10 @@
+# Web VR video player
 
-### Kelno's fork notes
-Forked from https://github.com/michal-repo/web_vr_video_player  
-Readme has been updated to reflect changes.  
+A self-hosted WebXR video library for stereoscopic 180° and 360° video, with
+an in-headset library browser and playback controls.
 
-#### Changes
-- Misc changes to file loading, trying to make it more reliable. It's still a mess but it works for me now.  
-- Cleaned up build system.  
-- Rewritten the generation scripts and related config. Some previous features dropped for now.  
-- The files generation script will auto generate categories based on the directories the videos are in.  
-- Changed default zoom to 180 for SBS.  
-
----
-
-# Web VR video player for 180° videos.
-
-## If you liked it you can support my work
-[!["Buy Me A Coffee"](https://raw.githubusercontent.com/michal-repo/random_stuff/refs/heads/main/bmac_small.png)](https://buymeacoffee.com/michaldev)
+This repository began as a fork of
+[michal-repo/web_vr_video_player](https://github.com/michal-repo/web_vr_video_player).
 
 ## Licenses
 
@@ -26,22 +15,37 @@ Readme has been updated to reflect changes.
 ### Fonts are licensed under the Apache License, Version 2.0.
 
 ## Functionality
+
+- Browse video categories generated from the library's directory structure.
+- Search and sort the current category.
+- Play SBS, top-bottom, 360°, fisheye, and flat video entries defined in
+  `files.json`.
+- Select a video from the library, then wait for browser media metadata before
+  switching into the player.
+
 ### Search in current folder
+
 Search will filter current folder with provided phrase.
 You can switch folders, search phrase will work until it's cleared.
 
 ![Search-box](https://github.com/michal-repo/web_vr_video_player/blob/main/examples/Screenshot_VR_player_4.png?raw=true)
 
 ![Search-box-keyboard](https://github.com/michal-repo/web_vr_video_player/blob/main/examples/Screenshot_VR_player_4_1.png?raw=true)
+
 ### Sorting
+
 Sort by Name or Date, change order ascending/descending.
 
 ![Sorting](https://github.com/michal-repo/web_vr_video_player/blob/main/examples/Screenshot_VR_player_5.png?raw=true)
+
 ### Drag in Folders view
+
 You can reposition Folders view by holding trigger and dragging view using bottom bar.
 
 ![drag](https://github.com/michal-repo/web_vr_video_player/blob/main/examples/Screenshot_VR_player_6.png?raw=true)
+
 ### Drag in Player view
+
 You can reposition Player and Video Spheres by holding trigger and dragging view using bottom bar.
 
 ![drag](https://github.com/michal-repo/web_vr_video_player/blob/main/examples/Screenshot_VR_player_7.png?raw=true)
@@ -50,20 +54,27 @@ Second options is to reposition only Player controls
 
 ![drag](https://github.com/michal-repo/web_vr_video_player/blob/main/examples/Screenshot_VR_player_8.png?raw=true)
 
-*Player controls and spheres will reset to default position on exit from current video playback*
+_Player controls and spheres will reset to default position on exit from current video playback_
+
 ### Gamepad controls
+
 #### Playback control
-Thumbstick: 
-- up/down for zoom
+
+Thumbstick:
+
+- up/down for zoom (SBS playback starts at a 180° zoom)
 - left/right for rewind and fast forward (10 seconds jumps)
 
-*If there are two connected controllers pressing trigger switches active controller.*
+_If there are two connected controllers pressing trigger switches active controller._
 
 #### Folders view
-Thumbstick: 
+
+Thumbstick:
+
 - left/right for switching pages
 
 ## Demo
+
 [on Github Pages](https://michal-repo.github.io/web_vr_video_player/)
 
 ## Requirements
@@ -140,40 +151,26 @@ Deploy the repository root through any static HTTPS web server. Ensure that the
 server can read the video and thumbnail paths written to `files.json`, and that
 it supports HTTP byte-range requests so video seeking works.
 
-## Setup
-
-### Using JSON solution and provided Python scripts
-
-- Copy `config.ini.example` to `config.ini`
-- Edit `config.ini`
-- Edit `config.ini` providing correct paths
-    All those paths need to be accessible on the same partition. You can use symlink to help that if needed.
-
-(needs reimplementation) Script can set screen type based on file name. Add one of following at the end of file name: `_TB` (Top-Bottom), `_SCREEN`. Default screen type is Side-by-Side.
-
-Supported tags:
-
-- `_SCREEN` - normal 2D screen
-- `_SBS` - Side by Side
-- `_TB` - Top Bottom 180
-- `_360` - Top Bottom 360
-- `_2D_180` - fisheye 180, not VR (one lens)
-- `_2D_360` - fisheye 360, not VR (one lens)
-
 ### Extensions
 
 [Extensions](https://github.com/michal-repo/web_vr_video_player_extensions)
 
 ## Generating your own JSON file with video sources
 
-Player is using locally stored "files.json" with video sources.  
-To use the included generation script, Configure `config.ini`, then generate with `generate_json.sh`.  
-The files generation script will auto generate categories based on the directories the videos are in.
+The player reads a locally generated `files.json` catalogue. Configure
+`config.ini`, then run `generate_json.sh` (or the direct Python command shown
+above). The generator creates one category for each video directory and uses
+the directory's name as the category label.
+
+Generated entries currently default to `sbs`. To use another projection or
+stereo layout, edit the entry's `screen_type` in `files.json` or provide a
+catalogue from another source.
 
 ## Generating thumbnails
-Configure `config.ini`, then generate with `generate_thumbnails.sh`.   
+
+Configure `config.ini`, then generate with `generate_thumbnails.sh`.  
 ffmpeg & ffprobe need to be in path.
- 
+
 ### Structure for JSON file
 
 ```
@@ -195,7 +192,9 @@ ffmpeg & ffprobe need to be in path.
     ]
 }
 ```
+
 #### Screen type
+
 `"screen_type"` can be set to one of values:
 
 `sbs` - Side by Side
