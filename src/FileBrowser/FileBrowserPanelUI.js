@@ -31,6 +31,8 @@ import * as UI from "../UI.js";
 
 import * as Helpers from "../Helpers.js";
 
+import { sanitizeFontText } from "../font.js";
+
 import * as ScreenManager from "../ScreenManager/ScreenManager.js";
 
 // Import Icons
@@ -176,7 +178,7 @@ export class FileBrowserPanel {
             fontFamily: FontJSON,
             fontTexture: FontImage,
             fontSize: this.PANELMAXHEIGHT * 0.029,
-            content: name,
+            content: sanitizeFontText(name),
         };
     }
 
@@ -1297,7 +1299,9 @@ export class FileBrowserPanel {
             backgroundOpacity: 1,
         }).add(
             new Text({
-                content: isPageSwitcher ? pageText : this.VIDEOS[index].name,
+                content: sanitizeFontText(
+                    isPageSwitcher ? pageText : this.VIDEOS[index].name
+                ),
             })
         );
         folderButton.folderId = id;
