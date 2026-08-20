@@ -68,9 +68,77 @@ Thumbstick:
 
 ## Requirements
 
-- Web server configured for https (WebXR requires https)
-- Python 3
-- (optional) FFMPEG, to generate thumbnails
+- Node.js and npm (needed to install dependencies and build the browser bundle)
+- A static web server (needed to load `files.json`; opening `index.html` directly
+  from disk will not work)
+- Python 3 (needed only to generate `files.json`)
+- FFmpeg and FFprobe (optional; needed only to generate thumbnails)
+
+## Running the player
+
+The application is a static web site after it has been built. It has no
+application server, database, or Node.js server to run at runtime. A static web
+server must serve the repository root, including `index.html`, `dist/`, and the
+generated `files.json` file.
+
+### First-time setup
+
+Install the locked dependency versions:
+
+```powershell
+npm ci
+```
+
+Create `config.ini` from `config.ini.example` and set the paths to the video
+library, optional thumbnail library, and this player directory. Then generate
+the video catalogue:
+
+```bash
+./generate_json.sh
+```
+
+The generator writes `files.json` to the repository root. Run it again after
+adding, removing, or moving videos. The bundled scripts use Bash; on Windows,
+run them from WSL or Git Bash. Alternatively, run the Python generator directly:
+
+```powershell
+python scripts/generate_json.py config.ini
+```
+
+### Local development
+
+The project does not include a development server, but Webpack can rebuild the
+bundle whenever a source file changes. Run this in one terminal:
+
+```powershell
+npm run build-dev -- --watch
+```
+
+Then serve the repository root from a second terminal:
+
+```powershell
+py -m http.server 8000
+```
+
+Open `http://localhost:8000` in a desktop browser. On Linux and macOS, use
+`python3 -m http.server 8000` instead. Stop the watcher with `Ctrl+C` when you
+are finished.
+
+`http://localhost` is suitable for desktop development. To enter immersive VR
+from a headset at a LAN address, serve the site over HTTPS with a certificate
+trusted by the headset; WebXR is available only in secure contexts.
+
+### Production build and deployment
+
+Create an optimized bundle with:
+
+```powershell
+npm run build
+```
+
+Deploy the repository root through any static HTTPS web server. Ensure that the
+server can read the video and thumbnail paths written to `files.json`, and that
+it supports HTTP byte-range requests so video seeking works.
 
 ## Setup
 
@@ -215,19 +283,3 @@ If videos or player can't be loaded make sure that this app files are owned by w
 ![Print-screen-2](https://github.com/michal-repo/web_vr_video_player/blob/main/examples/Screenshot_VR_player_2.png?raw=true)
 
 ![Print-screen-3](https://github.com/michal-repo/web_vr_video_player/blob/main/examples/Screenshot_VR_player_3.png?raw=true)
-
-## Building
-
-### Development mode
-
-```
-npm install
-npm run build-dev
-```
-
-### Production mode
-
-```
-npm install
-npm run build
-```
