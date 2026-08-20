@@ -937,13 +937,13 @@ export function scaleTBScreenMesh(x_scale) {
   meshRightTBScreen.scale.x = x_scale;
 }
 
-if (WebGL.isWebGLAvailable()) {
+if (WebGL.isWebGL2Available()) {
   window.addEventListener("resize", onWindowResize);
   window.addEventListener("load", () => {
     init();
   });
 } else {
-  const warning = WebGL.getWebGLErrorMessage();
+  const warning = WebGL.getWebGL2ErrorMessage();
   document.body.appendChild(warning);
 }
 
