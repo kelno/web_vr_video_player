@@ -27,7 +27,6 @@ export let scene,
   vrControlCurrentlyUsedController,
   gamepad,
   video,
-  video_src,
   videoTexture,
   meshLeftSBS,
   meshLeftTB,
@@ -142,6 +141,10 @@ function init() {
   /////////
 
   video = document.getElementById("video");
+  video.addEventListener("error", () => {
+    console.error("Unable to load video:", video.currentSrc, video.error);
+    showPopupMessage(Helpers.getWordFromLang("video_not_found"));
+  });
 
   videoTexture = new THREE.VideoTexture(video);
   const material = new THREE.MeshBasicMaterial({ map: videoTexture });
@@ -582,7 +585,7 @@ function init() {
   //
   // FILES
 
-  fileBrowserPanel = new FileBrowserPanel({}, true);
+  fileBrowserPanel = new FileBrowserPanel({});
   sourcesSelectorPanel = new SourcesSelectorPanel(Extensions.registered);
 
   //

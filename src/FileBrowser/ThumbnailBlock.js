@@ -10,8 +10,6 @@ export default class ThumbnailBlock extends Block {
     fileNameButton;
     fileThumbnail;
     screen_type;
-    shouldVerifyVideoSRC = false;
-
     constructor(
         options,
         fileSRC,
@@ -22,8 +20,7 @@ export default class ThumbnailBlock extends Block {
         frame_width,
         selectedAttributes,
         hoveredStateAttributes,
-        idleStateAttributes,
-        shouldVerifyVideoSRC = false
+        idleStateAttributes
     ) {
         super(options);
 
@@ -33,50 +30,27 @@ export default class ThumbnailBlock extends Block {
         this.screen_type = screen_type;
         this.frame_height = frame_height;
         this.frame_width = frame_width;
-        this.shouldVerifyVideoSRC = shouldVerifyVideoSRC;
+        this.setupState({
+            state: "selected",
+            attributes: selectedAttributes,
+            onSet: () => {
+                if (screen_type === "screen")
+                    MAIN.scaleScreenMesh(
+                        this.frame_width / this.frame_height
+                    );
+                if (screen_type === "tb_screen")
+                    MAIN.scaleTBScreenMesh(
+                        this.frame_width / this.frame_height
+                    );
 
-        if (this.shouldVerifyVideoSRC) {
-            this.setupState({
-                state: "selected",
-                attributes: selectedAttributes,
-                onSet: () => {
-                    const response = Helpers.testIfFileExist(this.fileSRC);
-                    if (response) {
-                        if (screen_type === "screen")
-                            MAIN.scaleScreenMesh(
-                                this.frame_width / this.frame_height
-                            );
-                        if (screen_type === "tb_screen")
-                            MAIN.scaleTBScreenMesh(
-                                this.frame_width / this.frame_height
-                            );
-                        Helpers.setVideoSrc(this.fileSRC);
-                        fileBrowserPanel.hideFileMenuPanel(this.screen_type);
-                    } else {
-                        MAIN.showPopupMessage(
-                            Helpers.getWordFromLang("video_not_found")
-                        );
+                Helpers.setVideoSrc(this.fileSRC).catch((error) => {
+                    if (error.name !== "AbortError") {
+                        console.error("Unable to start video playback:", error);
                     }
-                },
-            });
-        } else {
-            this.setupState({
-                state: "selected",
-                attributes: selectedAttributes,
-                onSet: () => {
-                    if (screen_type === "screen")
-                        MAIN.scaleScreenMesh(
-                            this.frame_width / this.frame_height
-                        );
-                    if (screen_type === "tb_screen")
-                        MAIN.scaleTBScreenMesh(
-                            this.frame_width / this.frame_height
-                        );
-                    Helpers.setVideoSrc(this.fileSRC);
-                    fileBrowserPanel.hideFileMenuPanel(this.screen_type);
-                },
-            });
-        }
+                });
+                fileBrowserPanel.hideFileMenuPanel(this.screen_type);
+            },
+        });
 
         this.setupState({
             state: "hovered",

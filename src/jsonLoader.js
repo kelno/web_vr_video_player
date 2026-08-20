@@ -3,14 +3,12 @@ import registerExtension from "./index.js";
 export class JsonLoader {
   json_file;
   data;
-  verifyVideoSRC;
   name;
   status;
   error;
 
-  constructor(json_file, verifyVideoSRC = true, name = "Local Files") {
+  constructor(json_file, name = "Local Files") {
     this.json_file = json_file;
-    this.verifyVideoSRC = verifyVideoSRC;
     this.name = name;
   }
 
@@ -34,7 +32,6 @@ export class JsonLoader {
         registerExtension({
           type: "json_file",
           name: this.name,
-          verifyVideoSRC: this.verifyVideoSRC,
           data: json,
         });
         this.data = json;

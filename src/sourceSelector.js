@@ -101,8 +101,8 @@ export default class SourcesSelectorPanel {
         this.refreshSources(this.sources, false);
     }
 
-    refreshFileBrowser(json, verifyVideoSRC) {
-        fileBrowserPanel.rebuildFiles(json, verifyVideoSRC);
+    refreshFileBrowser(json) {
+        fileBrowserPanel.rebuildFiles(json);
         fileBrowserPanel.regenerateFoldersButtons();
         fileBrowserPanel.regenerateFileBrowser();
         this.hideSourcesSelectorPanel();
@@ -207,7 +207,7 @@ export default class SourcesSelectorPanel {
             sourceContainer.setupState({
                 state: "selected",
                 onSet: () => {
-                    this.selectSource(entry.data, entry.verifyVideoSRC);
+                    this.selectSource(entry.data);
                 },
             });
 
@@ -228,16 +228,13 @@ export default class SourcesSelectorPanel {
         registerNewObjectsToTest(fileBrowserPanel.fileBrowserObjectsToTest);
     }
 
-    selectSource(data, verifyVideoSRC) {
-        this.refreshFileBrowser(data, verifyVideoSRC);
+    selectSource(data) {
+        this.refreshFileBrowser(data);
     }
 
     selectFirstSourceIfOnlyOneAvailable() {
         if (this.sources.length === 1) {
-            this.selectSource(
-                this.sources[0].data,
-                this.sources[0].verifyVideoSRC
-            );
+            this.selectSource(this.sources[0].data);
         }
     }
 }

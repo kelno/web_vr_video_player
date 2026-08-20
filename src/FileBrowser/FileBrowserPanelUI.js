@@ -50,8 +50,6 @@ export class FileBrowserPanel {
     thumbsContainer;
     draggingBox;
 
-    shouldVerifyVideoSRC;
-
     defaultVideoThumbnail;
     listOfVideoThumbnailTextures = [];
 
@@ -277,9 +275,9 @@ export class FileBrowserPanel {
     // CONSTRUCT
     //////////////////////////////////////////////////////////////////////////////
 
-    constructor(files, shouldVerifyVideoSRC = false) {
+    constructor(files) {
         this.defaultVideoThumbnail = this.loader.load(VideoIcon);
-        this.rebuildFiles(files, shouldVerifyVideoSRC);
+        this.rebuildFiles(files);
 
         const circle = new CircleGeometry(2, 32);
         const loadingAnimatedObjBackgroundMaterial = new MeshBasicMaterial({
@@ -1063,8 +1061,7 @@ export class FileBrowserPanel {
                         : "1",
                     this.selectedAttributes,
                     this.hoveredStateAttributes,
-                    this.idleStateAttributes,
-                    this.shouldVerifyVideoSRC
+                    this.idleStateAttributes
                 );
 
                 thumbsContainerButtonsRow.add(thumb);
@@ -1607,9 +1604,7 @@ export class FileBrowserPanel {
         }
     }
 
-    rebuildFiles(files, shouldVerifyVideoSRC) {
-        this.shouldVerifyVideoSRC = shouldVerifyVideoSRC;
-
+    rebuildFiles(files) {
         if (files.videos) {
             this.VIDEOS = files.videos;
             this.FILES = this.VIDEOS[0].list;
