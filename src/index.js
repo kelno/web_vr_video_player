@@ -52,6 +52,7 @@ export let clickedButton = undefined;
 export let camToSave = {};
 
 let popupMessage, popupContainer;
+let pendingVideoPlayback = null;
 
 const CAMERAPOSITIONY = 1.6;
 
@@ -143,8 +144,10 @@ function init() {
   video = document.getElementById("video");
   video.addEventListener("error", () => {
     console.error("Unable to load video:", video.currentSrc, video.error);
+    pendingVideoPlayback = null;
     showPopupMessage(Helpers.getWordFromLang("video_not_found"));
   });
+  video.addEventListener("loadedmetadata", startPendingVideoPlayback);
 
   videoTexture = new THREE.VideoTexture(video);
   const material = new THREE.MeshBasicMaterial({ map: videoTexture });
@@ -604,17 +607,59 @@ function selectFirst() {
 
 let showPopupTimeoutID;
 
-export function showPopupMessage(message) {
+export function showPopupMessage(message, duration = 4000) {
   if (typeof message === "string") {
     popupMessage.set({ content: message });
     popupContainer.visible = true;
     clearTimeout(showPopupTimeoutID);
-    showPopupTimeoutID = setTimeout(() => {
-      popupContainer.visible = false;
-    }, 4000);
+    if (duration > 0) {
+      showPopupTimeoutID = setTimeout(() => {
+        popupContainer.visible = false;
+      }, duration);
+    }
   } else {
     console.warn(Helpers.getWordFromLang("show_popup_message_error"));
   }
+}
+
+function hidePopupMessage() {
+  clearTimeout(showPopupTimeoutID);
+  popupContainer.visible = false;
+}
+
+export function requestVideoPlayback(source, screenType) {
+  pendingVideoPlayback = { source, screenType };
+  showPopupMessage(Helpers.getWordFromLang("loading_video"), 0);
+
+  const { sourceChanged, playback } = Helpers.setVideoSrc(source);
+  playback.catch((error) => {
+    if (error.name !== "AbortError") {
+      console.error("Unable to start video playback:", error);
+    }
+  });
+
+  if (!sourceChanged && Number.isFinite(video.duration) && video.duration > 0) {
+    startPendingVideoPlayback();
+  }
+}
+
+export function cancelVideoPlaybackRequest() {
+  pendingVideoPlayback = null;
+  hidePopupMessage();
+}
+
+function startPendingVideoPlayback() {
+  if (
+    pendingVideoPlayback === null ||
+    video.getAttribute("src") !== pendingVideoPlayback.source
+  ) {
+    return;
+  }
+
+  const { screenType } = pendingVideoPlayback;
+  pendingVideoPlayback = null;
+  hidePopupMessage();
+  fileBrowserPanel.hideFileMenuPanel(screenType);
 }
 
 function showMeshes3D() {

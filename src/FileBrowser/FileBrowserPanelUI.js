@@ -1377,6 +1377,7 @@ export class FileBrowserPanel {
     // Hide / Show Menu
 
     showFileMenuPanel() {
+        MAIN.cancelVideoPlaybackRequest();
         UI.showMenu(
             [
                 this.fileBrowserContainer,

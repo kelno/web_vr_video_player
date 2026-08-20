@@ -12,7 +12,9 @@ export function setMediaSource(video, source) {
         throw new TypeError("A media source must be a non-empty string.");
     }
 
-    if (video.getAttribute("src") !== source) {
+    const sourceChanged = video.getAttribute("src") !== source;
+
+    if (sourceChanged) {
         if (hasMediaSource(video)) {
             video.pause();
         }
@@ -21,7 +23,10 @@ export function setMediaSource(video, source) {
         video.load();
     }
 
-    return video.play();
+    return {
+        sourceChanged,
+        playback: video.play(),
+    };
 }
 
 export function clearMediaSource(video) {

@@ -40,8 +40,13 @@ function createVideo(source = "") {
 test("sets and plays a new source once", async () => {
     const video = createVideo();
 
-    await setMediaSource(video, "videos/example.mp4");
+    const { sourceChanged, playback } = setMediaSource(
+        video,
+        "videos/example.mp4"
+    );
+    await playback;
 
+    assert.equal(sourceChanged, true);
     assert.equal(video.getAttribute("src"), "videos/example.mp4");
     assert.equal(video.loadCalls, 1);
     assert.equal(video.pauseCalls, 0);
@@ -51,8 +56,14 @@ test("sets and plays a new source once", async () => {
 test("does not reload an already selected source", async () => {
     const video = createVideo("videos/example.mp4");
 
-    await setMediaSource(video, "videos/example.mp4");
+    const { sourceChanged, playback } = setMediaSource(
+        video,
+        "videos/example.mp4"
+    );
+    await playback;
 
+    assert.equal(video.loadCalls, 0);
+    assert.equal(sourceChanged, false);
     assert.equal(video.loadCalls, 0);
     assert.equal(video.pauseCalls, 0);
     assert.equal(video.playCalls, 1);

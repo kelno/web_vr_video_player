@@ -10,6 +10,7 @@
         "tilt_video": "Tilt video",
         "switch_mode": "Switch mode",
         "not_available": "N/A",
+        "loading_video": "Loading video...",
         "video_not_found": "Video file not found.",
         "search_in_folders": "Search in folder...",
         "clear": "Clear",

@@ -1,8 +1,5 @@
 import { Block } from "../../node_modules/three-mesh-ui/build/three-mesh-ui.module.js";
 
-import * as Helpers from "../Helpers.js";
-import { fileBrowserPanel } from "../index.js";
-
 import * as MAIN from "../index.js";
 
 export default class ThumbnailBlock extends Block {
@@ -43,12 +40,7 @@ export default class ThumbnailBlock extends Block {
                         this.frame_width / this.frame_height
                     );
 
-                Helpers.setVideoSrc(this.fileSRC).catch((error) => {
-                    if (error.name !== "AbortError") {
-                        console.error("Unable to start video playback:", error);
-                    }
-                });
-                fileBrowserPanel.hideFileMenuPanel(this.screen_type);
+                MAIN.requestVideoPlayback(this.fileSRC, this.screen_type);
             },
         });
 
