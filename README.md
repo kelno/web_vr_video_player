@@ -118,26 +118,20 @@ python scripts/generate_json.py config.ini
 
 ### Local development
 
-The project does not include a development server, but Webpack can rebuild the
-bundle whenever a source file changes. Run this in one terminal:
+Run the HTTPS development server from the repository root:
 
 ```powershell
-npm run build-dev -- --watch
+npm run dev
 ```
 
-Then serve the repository root from a second terminal:
+It rebuilds when source files change, serves the player at port 8040, and
+mounts `D:\download` at `/download/` so generated video URLs work without
+exposing the rest of the drive. The terminal prints both the desktop and LAN
+URLs. Stop the server with `Ctrl+C` when you are finished.
 
-```powershell
-py -m http.server 8000
-```
-
-Open `http://localhost:8000` in a desktop browser. On Linux and macOS, use
-`python3 -m http.server 8000` instead. Stop the watcher with `Ctrl+C` when you
-are finished.
-
-`http://localhost` is suitable for desktop development. To enter immersive VR
-from a headset at a LAN address, serve the site over HTTPS with a certificate
-trusted by the headset; WebXR is available only in secure contexts.
+Webpack generates a self-signed development certificate. Open the printed HTTPS
+URL in a headset and accept its one-time certificate warning before entering
+WebXR.
 
 ### Production build and deployment
 
