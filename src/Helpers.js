@@ -1,6 +1,7 @@
 import {
     clearMediaSource,
     hasMediaSource,
+    isCurrentMediaSource,
     setMediaSource,
 } from "./mediaSource.mjs";
 
@@ -14,6 +15,10 @@ export function videoSrcExists() {
 
 export function setVideoSrc(src) {
     return setMediaSource(document.getElementById("video"), src);
+}
+
+export function isCurrentVideoSrc(src) {
+    return isCurrentMediaSource(document.getElementById("video"), src);
 }
 
 export function removeVideoSrc() {

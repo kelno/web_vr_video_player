@@ -1390,7 +1390,6 @@ export class FileBrowserPanel {
             this.fileBrowserObjectsToTest,
             true
         );
-        Helpers.removeVideoSrc();
         MAIN.playbackChange(false);
     }
 

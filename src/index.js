@@ -141,6 +141,10 @@ function init() {
 
   video = document.getElementById("video");
   video.addEventListener("error", () => {
+    if (!isPendingVideoPlaybackCurrent()) {
+      return;
+    }
+
     console.error("Unable to load video:", video.currentSrc, video.error);
     pendingVideoPlayback = null;
     showPopupMessage(Helpers.getWordFromLang("video_not_found"));
@@ -556,7 +560,7 @@ function init() {
     padding: 0.02,
     borderRadius: 0,
     backgroundOpacity: 1,
-    backgroundColor: new THREE.Color(0x0099ff),
+    backgroundColor: new THREE.Color(0x5c5c5c),
     height: 0.2,
     width: 2,
   });
@@ -626,6 +630,9 @@ function hidePopupMessage() {
 }
 
 export function requestVideoPlayback(source, screenType) {
+  // Explicitly abort the old resource before registering this selection. This
+  // prevents late media events from a rapid previous click opening the player.
+  cancelVideoPlaybackRequest();
   pendingVideoPlayback = { source, screenType };
   showPopupMessage(Helpers.getWordFromLang("loading_video"), 0);
 
@@ -643,14 +650,12 @@ export function requestVideoPlayback(source, screenType) {
 
 export function cancelVideoPlaybackRequest() {
   pendingVideoPlayback = null;
+  Helpers.removeVideoSrc();
   hidePopupMessage();
 }
 
 function startPendingVideoPlayback() {
-  if (
-    pendingVideoPlayback === null ||
-    video.getAttribute("src") !== pendingVideoPlayback.source
-  ) {
+  if (!isPendingVideoPlaybackCurrent()) {
     return;
   }
 
@@ -658,6 +663,13 @@ function startPendingVideoPlayback() {
   pendingVideoPlayback = null;
   hidePopupMessage();
   fileBrowserPanel.hideFileMenuPanel(screenType);
+}
+
+function isPendingVideoPlaybackCurrent() {
+  return (
+    pendingVideoPlayback !== null &&
+    Helpers.isCurrentVideoSrc(pendingVideoPlayback.source)
+  );
 }
 
 function showMeshes3D() {
