@@ -88,9 +88,9 @@ Thumbstick:
 ## Running the player
 
 The application is a static web site after it has been built. It has no
-application server, database, or Node.js server to run at runtime. A static web
-server must serve the repository root, including `index.html`, `dist/`, and the
-generated `files.json` file.
+application server, database, or Node.js server to run at runtime. The `dist/`
+directory is the complete player release: it contains the HTML shell, browser
+bundle, assets, and generated catalogue.
 
 ### First-time setup
 
@@ -100,17 +100,18 @@ Install the locked dependency versions:
 npm ci
 ```
 
-Create `config.ini` from `config.ini.example` and set the paths to the video
-library, optional thumbnail library, and this player directory. Then generate
-the video catalogue:
+Create `config.ini` from `config.ini.example`. Set the local video and thumbnail
+library paths, the player site path (for example `/vr-player`), then choose the
+media URL prefixes that Nginx exposes beneath it. The project's own filesystem
+path is not part of this configuration. Generate the catalogue:
 
 ```bash
 ./generate_json.sh
 ```
 
-The generator writes `files.json` to the repository root. Run it again after
-adding, removing, or moving videos. The bundled scripts use Bash; on Windows,
-run them from WSL or Git Bash. Alternatively, run the Python generator directly:
+The generator writes `dist/files.json`. Run it again after adding, removing, or
+moving videos. The bundled scripts use Bash; on Windows, run them from WSL or
+Git Bash. Alternatively, run the Python generator directly:
 
 ```powershell
 python scripts/generate_json.py config.ini
@@ -124,10 +125,11 @@ Run the HTTPS development server from the repository root:
 npm run dev
 ```
 
-It rebuilds when source files change, serves the player at port 8040, and
-mounts `D:\download` at `/download/` so generated video URLs work without
-exposing the rest of the drive. The terminal prints both the desktop and LAN
-URLs. Stop the server with `Ctrl+C` when you are finished.
+It rebuilds when source files change and serves the player at port 8040. It
+reads the media paths and URL prefixes from `config.ini`, so local playback uses
+the same site and media URL contract as Nginx. Open the configured site path
+after the printed desktop or LAN URL (for example `/vr-player/`). Stop the
+server with `Ctrl+C` when you are finished.
 
 Webpack generates a self-signed development certificate. Open the printed HTTPS
 URL in a headset and accept its one-time certificate warning before entering
@@ -141,9 +143,17 @@ Create an optimized bundle with:
 npm run build
 ```
 
-Deploy the repository root through any static HTTPS web server. Ensure that the
-server can read the video and thumbnail paths written to `files.json`, and that
-it supports HTTP byte-range requests so video seeking works.
+Then generate the catalogue after the build (the build clears old output):
+
+```powershell
+python scripts/generate_json.py config.ini
+```
+
+Deploy the resulting `dist/` directory as a single unit. Configure Nginx to
+serve that directory at the configured site path and map its `/media/` and
+`/thumbnails/` routes to the actual library directories. Nginx must be able to
+read those directories and support HTTP byte-range requests for video seeking.
+See [the Nginx site example](docs/nginx.conf.example).
 
 ### Extensions
 
@@ -164,6 +174,40 @@ catalogue from another source.
 
 Configure `config.ini`, then generate with `generate_thumbnails.sh`.  
 ffmpeg & ffprobe need to be in path.
+
+## Preparing MP4 files for streaming
+
+Large MP4 files load promptly only when their `moov` metadata atom is before
+the media data. Check a directory without changing files:
+
+```powershell
+python scripts/remux_faststart.py D:\download\my_library --recursive
+```
+
+The script reports MP4 files as `READY` or `NEEDS REMUX`, depending on the
+location of their metadata. It also finds MKVs. To remux safe MP4s in place and
+replace MKVs with `.mp4` files when all their streams fit in MP4, opt in
+explicitly:
+
+```powershell
+python scripts/remux_faststart.py D:\download\my_library --recursive --apply
+```
+
+Remuxing uses `ffmpeg -c copy -movflags +faststart`: it rewrites the container
+without re-encoding audio or video. An MKV is deleted only after its MP4 output
+has been validated. Multiple audio tracks are preserved. MKVs with incompatible
+subtitle, attachment, or data streams are skipped and explained. To retain MKV
+sources after successful conversion, add `--keep-original`. To deliberately
+create a video/audio-only MP4 from incompatible files, use `--force` with
+`--apply`:
+
+```powershell
+python scripts/remux_faststart.py D:\download\my_library --recursive --apply --force
+```
+
+`ffmpeg` and `ffprobe` must be available on `PATH`. The script validates that
+the expected output streams exist before publishing an output file. Regenerate
+`files.json` after MKV conversions so the player refers to the new `.mp4` paths.
 
 ### Structure for JSON file
 

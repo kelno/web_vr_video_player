@@ -1,132 +1,153 @@
-import os
-import json
-from datetime import datetime
-from collections import defaultdict
-import sys
+#!/usr/bin/env python3
+"""Generate the player catalogue inside the self-contained dist directory."""
+
+from __future__ import annotations
+
+import argparse
 import configparser
+from collections import defaultdict
+from datetime import datetime
+import json
+import os
 from pathlib import Path
+import sys
+from urllib.parse import quote
+
 from common import is_video_file
 
-# Define the output directory
-OUTPUT_DIR = Path(__file__).resolve().parent.parent
 
-if not len(sys.argv) > 1:
-    print("Usage: pass config ini file as first parameter, you can force metadata rescan by setting second parameter to true (false by default)\neg.\npython3 generateJson.py config.ini\npython3 generateJson.py config.ini true")
-    quit()
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "dist" / "files.json"
 
-configFile = sys.argv[1]
 
-if not os.path.isfile(configFile):
-    print("Passed ini file do not exist")
-    quit()
-
-config = configparser.ConfigParser()
-config.read(configFile)
-
-def clean_filename(filename):
-    # Remove common prefixes and file extensions
-    prefixes = ('SpankBang.com_', 'vrporncom_', 'WankzVR - ', ' - ')
+def clean_filename(filename: str) -> str:
+    """Turn a source filename into a readable library label."""
+    prefixes = ("SpankBang.com_", "vrporncom_", "WankzVR - ", " - ")
     for prefix in prefixes:
         if filename.startswith(prefix):
-            filename = filename[len(prefix):]
-
-    # Remove file extension
+            filename = filename[len(prefix) :]
     filename = os.path.splitext(filename)[0]
-
-    # Replace special characters with spaces
-    replacements = {'+': ' ', '_': ' ', '__': ' ', '  ': ' '}
-    for old, new in replacements.items():
+    for old, new in {"+": " ", "_": " ", "__": " ", "  ": " "}.items():
         filename = filename.replace(old, new)
+    return " ".join(
+        part if part.lower() in {"4k", "1080p", "180", "6k", "1920p"} else part.title()
+        for part in filename.split()
+    ).strip()
 
-    # Title case except for resolution indicators
-    parts = []
-    for part in filename.split():
-        if part.lower() in ('4k', '1080p', '180', '6k', '1920p'):
-            parts.append(part)
-        else:
-            parts.append(part.title())
 
-    return ' '.join(parts).strip()
-
-def get_file_timestamps(filepath):
-    mtime = os.path.getmtime(filepath)
-    dt = datetime.fromtimestamp(mtime)
+def get_file_timestamps(filepath: Path) -> dict[str, str]:
+    """Return display and sorting timestamps for a source media file."""
+    mtime = filepath.stat().st_mtime
     return {
-        "date": dt.strftime("%Y-%m-%d %H:%M:%S"),
-        "epoch": str(mtime)
+        "date": datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S"),
+        "epoch": str(mtime),
     }
 
-def generate_category_entries():
-    videos_dir = Path(config['videos']['videos_path'])
-    thumbnails_dir = Path(config['videos']['thumbnails_path'])
-    player_public_path = Path(config['videos']['player_public_path'])
-    category_map = defaultdict(list)
 
-    # Check if player_public_path is on the same disk as videos_dir
-    if videos_dir.drive != player_public_path.drive:
-        raise ValueError(f"player_public_path ({player_public_path}) and videos_path ({videos_dir}) are not on the same disk. Cannot compute relative path.")
+def url_for_file(prefix: str, relative_path: Path) -> str:
+    """Join a configured URL prefix to a safely escaped library-relative path."""
+    if not prefix.startswith("/"):
+        raise ValueError(f"URL prefix must start with '/': {prefix}")
+    return f"{prefix.rstrip('/')}/{quote(relative_path.as_posix(), safe='/')}"
 
-    if not os.path.exists(videos_dir):
-        raise FileNotFoundError(f"Videos directory not found at {os.path.abspath(videos_dir)}")
 
+def join_url_prefix(site_prefix: str, route_prefix: str) -> str:
+    """Put a media route under the player site path, including root sites."""
+    if not site_prefix.startswith("/") or not route_prefix.startswith("/"):
+        raise ValueError("URL prefixes must start with '/'.")
+    site = site_prefix.rstrip("/")
+    route = route_prefix.rstrip("/")
+    return f"{site}{route}" or "/"
+
+
+def load_config(config_path: Path) -> configparser.SectionProxy:
+    """Read and validate the [videos] section from the local configuration."""
+    config = configparser.ConfigParser()
+    if not config.read(config_path):
+        raise FileNotFoundError(f"Configuration file not found: {config_path}")
+    if "videos" not in config:
+        raise ValueError("Configuration must contain a [videos] section.")
+    section = config["videos"]
+    for option in ("videos_path", "thumbnails_path"):
+        if not section.get(option):
+            raise ValueError(f"Missing required [videos] value: {option}")
+    return section
+
+
+def generate_category_entries(config: configparser.SectionProxy) -> dict[str, list[dict[str, str]]]:
+    """Build category entries using media roots and server URL prefixes only."""
+    videos_dir = Path(config["videos_path"])
+    thumbnails_dir = Path(config["thumbnails_path"])
+    site_url_prefix = config.get("site_url_prefix", "/")
+    videos_url_prefix = join_url_prefix(site_url_prefix, config.get("videos_url_prefix", "/media"))
+    thumbnails_url_prefix = join_url_prefix(
+        site_url_prefix, config.get("thumbnails_url_prefix", "/thumbnails")
+    )
+    if not videos_dir.is_dir():
+        raise FileNotFoundError(f"Videos directory not found: {videos_dir}")
+
+    category_map: dict[str, list[dict[str, str]]] = defaultdict(list)
     for root, _, files in os.walk(videos_dir):
-        for file in files:
-            if is_video_file(file):
-                full_path = os.path.join(root, file)
-                rel_path = os.path.relpath(full_path, start=videos_dir)
-
-                timestamps = get_file_timestamps(full_path)
-
-                # Use directory name as category, or "Uncategorized" for root
-                category_name = os.path.basename(root) if root != str(videos_dir) else "!Uncategorized"
-
-                thumbnail_path = (thumbnails_dir / rel_path).with_suffix('.jpg')
-                thumbnail_exists = thumbnail_path.exists()
-
-                # Compute relative path for src
-                src = os.path.relpath(full_path, start=player_public_path).replace(os.sep, '/')
-                print(f"Processing file: {file}")
-                print(f"Category: {category_name}")
-                print(f"src: {src}")
-
-                # Compute relative path for thumbnail
-                thumb_rel_path = os.path.relpath(thumbnail_path, start=player_public_path).replace(os.sep, '/') if thumbnail_exists else ""
-                print(f"Thumbnail path: {thumb_rel_path}")
-
-                entry = {
-                    "name": clean_filename(file),
-                    "src": src,
-                    "thumbnail": thumb_rel_path,
-                    "screen_type": "sbs",
-                    "date": timestamps["date"],
-                    "epoch": timestamps["epoch"]
-                }
-                category_map[category_name].append(entry)
-
+        root_path = Path(root)
+        for filename in files:
+            if not is_video_file(filename):
+                continue
+            video_path = root_path / filename
+            relative_path = video_path.relative_to(videos_dir)
+            thumbnail_path = (thumbnails_dir / relative_path).with_suffix(".jpg")
+            category_name = root_path.name if root_path != videos_dir else "!Uncategorized"
+            entry = {
+                "name": clean_filename(filename),
+                "src": url_for_file(videos_url_prefix, relative_path),
+                "thumbnail": (
+                    url_for_file(thumbnails_url_prefix, relative_path.with_suffix(".jpg"))
+                    if thumbnail_path.exists()
+                    else ""
+                ),
+                "screen_type": "sbs",
+                **get_file_timestamps(video_path),
+            }
+            category_map[category_name].append(entry)
     return category_map
 
-def main():
+
+def write_catalogue(category_map: dict[str, list[dict[str, str]]], output_path: Path) -> int:
+    """Write sorted catalogue data and return the number of video entries."""
+    video_data = {
+        "videos": [
+            {"name": category, "list": sorted(entries, key=lambda item: float(item["epoch"]), reverse=True)}
+            for category, entries in sorted(category_map.items())
+        ]
+    }
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(video_data, indent=4, ensure_ascii=False), encoding="utf-8")
+    return sum(len(category["list"]) for category in video_data["videos"])
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("config", type=Path, help="Path to config.ini")
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=DEFAULT_OUTPUT_PATH,
+        help=f"Catalogue output path (default: {DEFAULT_OUTPUT_PATH})",
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
     try:
-        category_map = generate_category_entries()
+        category_map = generate_category_entries(load_config(args.config))
+        video_count = write_catalogue(category_map, args.output)
+    except (OSError, ValueError) as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 1
+    print(f"files.json created at {args.output.resolve()}")
+    print(f"Found {len(category_map)} categories with {video_count} total videos")
+    return 0
 
-        video_data = {
-            "videos": [
-                {
-                    "name": category,
-                    "list": sorted(entries, key=lambda x: float(x["epoch"]), reverse=True)
-                } for category, entries in sorted(category_map.items())
-            ]
-        }
-
-        output_file = OUTPUT_DIR / 'files.json'
-        with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(video_data, f, indent=4, ensure_ascii=False)
-
-        print(f"files.json created successfully at {os.path.abspath(output_file)}")
-        print(f"Found {len(video_data['videos'])} categories with {sum(len(cat['list']) for cat in video_data['videos'])} total videos")
-
-    except Exception as e:
-        print(f"Error: {str(e)}")
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

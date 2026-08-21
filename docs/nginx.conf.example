@@ -1,0 +1,47 @@
+# Example Nginx site for the self-contained dist/ release directory.
+#
+# Replace the server name, certificate settings, and filesystem paths. The
+# URL paths below must match site_url_prefix, videos_url_prefix, and
+# thumbnails_url_prefix in config.ini before generating dist/files.json.
+
+server {
+    listen 443 ssl;
+    server_name vr.home.example.com;
+
+    # Use the certificate configuration already established on this server.
+    ssl_certificate     /etc/nginx/certs/vr.home.example.com.pem;
+    ssl_certificate_key /etc/nginx/certs/vr.home.example.com.key;
+
+    # site_url_prefix=/vr-player. Redirect the no-slash form so relative
+    # requests such as files.json resolve below the player site path.
+    location = /vr-player {
+        return 301 /vr-player/;
+    }
+
+    # The catalogue changes whenever the library is regenerated. Avoid serving
+    # an old one from a browser cache after a library update.
+    location = /vr-player/files.json {
+        alias /srv/vr-player/files.json;
+        add_header Cache-Control "no-store";
+    }
+
+    # Deploy the complete contents of this project's dist/ directory here.
+    # The alias trailing slash is required.
+    location /vr-player/ {
+        alias /srv/vr-player/;
+        index index.html;
+    }
+
+    # /vr-player/media/file.mp4 maps to /srv/media/videos/file.mp4. Nginx
+    # serves static media with byte ranges, which lets browsers initialize and
+    # seek large video files efficiently.
+    location /vr-player/media/ {
+        alias /srv/media/videos/;
+        autoindex off;
+    }
+
+    location /vr-player/thumbnails/ {
+        alias /srv/media/thumbnails/;
+        autoindex off;
+    }
+}
