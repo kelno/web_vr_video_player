@@ -6,19 +6,19 @@ import {
     DoubleSide,
     Mesh,
     CircleGeometry,
-} from "../../node_modules/three/build/three.module.js";
+} from "three";
 import {
     Block,
     Text,
     InlineBlock,
     Keyboard,
-} from "../../node_modules/three-mesh-ui/build/three-mesh-ui.module.js";
+} from "three-mesh-ui";
 
 import ThumbnailBlock from "./ThumbnailBlock.js";
 
-import Backspace from "../../node_modules/three-mesh-ui/examples/assets/backspace.png";
-import Enter from "../../node_modules/three-mesh-ui/examples/assets/enter.png";
-import Shift from "../../node_modules/three-mesh-ui/examples/assets/shift.png";
+import Backspace from "../../assets/ui/keyboard/backspace.png";
+import Enter from "../../assets/ui/keyboard/enter.png";
+import Shift from "../../assets/ui/keyboard/shift.png";
 
 import deepDelete from "../../node_modules/three-mesh-ui/src/utils/deepDelete.js";
 

@@ -1,8 +1,8 @@
-import { Color } from "../node_modules/three/build/three.module.js";
+import { Color } from "three";
 import {
     Block,
     Text,
-} from "../node_modules/three-mesh-ui/build/three-mesh-ui.module.js";
+} from "three-mesh-ui";
 
 import deepDelete from "../node_modules/three-mesh-ui/src/utils/deepDelete.js";
 

@@ -96,11 +96,6 @@ module.exports = (env) => {
         },
       ],
     },
-    resolve: {
-      alias: {
-        three: path.resolve(__dirname, "node_modules/three"),
-      },
-    },
     plugins: [
       // config.ini is local deployment configuration. Embed only browser-safe
       // player preferences; filesystem paths remain available to Webpack only.

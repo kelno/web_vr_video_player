@@ -1,12 +1,12 @@
 import {
     Color,
     TextureLoader,
-} from "../node_modules/three/build/three.module.js";
+} from "three";
 import {
     Block,
     Text,
     InlineBlock,
-} from "../node_modules/three-mesh-ui/build/three-mesh-ui.module.js";
+} from "three-mesh-ui";
 
 import FontJSON from "../assets/fonts/Roboto-Regular-msdf.json";
 import FontImage from "../assets/fonts/Roboto-Regular.png";

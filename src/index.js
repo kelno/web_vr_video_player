@@ -1,11 +1,11 @@
-import * as THREE from "../node_modules/three/build/three.module.js";
-import { VRButton } from "../node_modules/three/examples/jsm/webxr/VRButton.js";
-import { OrbitControls } from "../node_modules/three/examples/jsm/controls/OrbitControls.js";
+import * as THREE from "three";
+import { VRButton } from "three/addons/webxr/VRButton.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-import WebGL from "../node_modules/three/examples/jsm/capabilities/WebGL.js";
+import WebGL from "three/addons/capabilities/WebGL.js";
 
-import ThreeMeshUI from "../node_modules/three-mesh-ui/build/three-mesh-ui.module.js";
-import VRControl from "../node_modules/three-mesh-ui/examples/utils/VRControl.js";
+import ThreeMeshUI from "three-mesh-ui";
+import VRControl from "./vr/VRControl.js";
 
 import { PlayerPanel } from "./PlayerPanelUI.js";
 import { FileBrowserPanel } from "./FileBrowser/FileBrowserPanelUI.js";
