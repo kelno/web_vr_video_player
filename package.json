@@ -14,7 +14,7 @@
   "dependencies": {
     "@types/three": "^0.185.4",
     "three": "^0.185.1",
-    "three-mesh-ui": "github:michal-repo/three-mesh-ui"
+    "three-mesh-ui": "file:vendor/three-mesh-ui-6.5.31.tgz"
   },
   "devDependencies": {
     "file-loader": "^6.2.0",
