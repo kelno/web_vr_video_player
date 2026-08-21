@@ -1,37 +1,53 @@
 const path = require("path");
 const fs = require("fs");
+const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const PROJECT_ROOT = __dirname;
 const DIST_DIRECTORY = path.resolve(PROJECT_ROOT, "dist");
 
-function readVideosConfig() {
-  const configPath = path.resolve(PROJECT_ROOT, "config.ini");
-  if (!fs.existsSync(configPath)) {
-    return {};
-  }
-
-  const values = {};
-  let inVideosSection = false;
-  for (const rawLine of fs.readFileSync(configPath, "utf8").split(/\r?\n/)) {
+function parseIni(contents) {
+  const sections = {};
+  let currentSection = null;
+  for (const rawLine of contents.split(/\r?\n/)) {
     const line = rawLine.trim();
     if (!line || line.startsWith(";") || line.startsWith("#")) {
       continue;
     }
     if (line.startsWith("[") && line.endsWith("]")) {
-      inVideosSection = line === "[videos]";
+      currentSection = line.slice(1, -1).trim();
+      sections[currentSection] ??= {};
       continue;
     }
-    if (inVideosSection) {
+    if (currentSection) {
       const separator = line.indexOf("=");
       if (separator !== -1) {
-        values[line.slice(0, separator).trim()] = line
+        sections[currentSection][line.slice(0, separator).trim()] = line
           .slice(separator + 1)
           .trim();
       }
     }
   }
-  return values;
+  return sections;
+}
+
+function readConfig() {
+  const configPath = path.resolve(PROJECT_ROOT, "config.ini");
+  return fs.existsSync(configPath)
+    ? parseIni(fs.readFileSync(configPath, "utf8"))
+    : {};
+}
+
+function playerConfig(config) {
+  const configuredZoom = Number(config.player?.default_sbs_zoom ?? 100);
+  return {
+    // A bad local setting should not prevent the player from loading. Zero is
+    // useful for users who prefer to start with the screen at its base size.
+    defaultSbsZoom:
+      Number.isFinite(configuredZoom) && configuredZoom >= 0 && configuredZoom <= 180
+        ? configuredZoom
+        : 100,
+  };
 }
 
 function urlPrefix(value, fallback) {
@@ -50,7 +66,8 @@ function joinUrlPrefix(sitePrefix, routePrefix) {
 
 module.exports = (env) => {
   const isDevelopment = env.development === true;
-  const videosConfig = readVideosConfig();
+  const config = readConfig();
+  const videosConfig = config.videos ?? {};
   const sitePrefix = siteUrlPrefix(videosConfig.site_url_prefix);
   const assetPublicPath = sitePrefix ? `${sitePrefix}/` : "/";
 
@@ -84,6 +101,11 @@ module.exports = (env) => {
       },
     },
     plugins: [
+      // config.ini is local deployment configuration. Embed only browser-safe
+      // player preferences; filesystem paths remain available to Webpack only.
+      new webpack.DefinePlugin({
+        __PLAYER_CONFIG__: JSON.stringify(playerConfig(config)),
+      }),
       new HtmlWebpackPlugin({
         template: "./index.html",
         filename: "index.html",
@@ -159,3 +181,8 @@ module.exports = (env) => {
 
   return [indexConfig];
 };
+
+// Export the small configuration pieces so their edge cases can be checked
+// without creating a Webpack compiler.
+module.exports.parseIni = parseIni;
+module.exports.playerConfig = playerConfig;

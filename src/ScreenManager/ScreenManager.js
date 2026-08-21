@@ -1,5 +1,6 @@
 import * as MAIN from "../index.js";
 import PanelsList from "./Panels.js";
+import { playerConfig } from "../playerConfig.js";
 
 let isVRModeUsed = true;
 export let VRMode = "sbs";
@@ -94,6 +95,18 @@ export function zoom(in_or_out, step = 10) {
                 MAIN.meshes[mesh].translateOnAxis(temp, distance);
             }
         }
+    }
+}
+
+// Starting zoom is playback policy, but the screen manager owns the zoom
+// state. Set an absolute level so a repeated playback start cannot accumulate
+// zoom if a caller has not reset the screen first.
+export function applyDefaultSbsZoom() {
+    const zoomDifference = playerConfig.defaultSbsZoom - currentZoom;
+    if (zoomDifference > 0) {
+        zoom("in", zoomDifference);
+    } else if (zoomDifference < 0) {
+        zoom("out", -zoomDifference);
     }
 }
 

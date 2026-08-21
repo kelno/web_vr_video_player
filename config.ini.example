@@ -8,3 +8,7 @@ thumbnails_path=/mnt/hdd/thumbnails
 ; Media mounts below site_url_prefix. These must start with /.
 videos_url_prefix=/media
 thumbnails_url_prefix=/thumbnails
+
+[player]
+; Initial SBS screen zoom, from 0 (base size) through 180.
+default_sbs_zoom=100

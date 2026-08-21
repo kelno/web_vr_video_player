@@ -102,8 +102,10 @@ npm ci
 
 Create `config.ini` from `config.ini.example`. Set the local video and thumbnail
 library paths, the player site path (for example `/vr-player`), then choose the
-media URL prefixes that Nginx exposes beneath it. The project's own filesystem
-path is not part of this configuration. Generate the catalogue:
+media URL prefixes that Nginx exposes beneath it. The `[player]` section also
+controls the starting SBS screen zoom: `default_sbs_zoom` accepts 0 through 180
+and defaults to 100. The project's own filesystem path is not part of this
+configuration. Generate the catalogue:
 
 ```bash
 ./generate_json.sh
