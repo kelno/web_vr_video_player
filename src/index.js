@@ -706,6 +706,7 @@ export function playbackChange(is_active = false, screen_type = null) {
       if (screen_type !== null) {
         ScreenManager.switchModeVRScreen(screen_type);
       }
+      ScreenManager.applyPlaybackZoom();
       playMenuPanel.buttonPlay.playbackStarted();
       switch (ScreenManager.VRMode) {
         case "tb":
@@ -735,7 +736,6 @@ export function playbackChange(is_active = false, screen_type = null) {
           playMenuPanel.VRSBSTBModeButtonText.set({
             content: Helpers.getWordFromLang("side_by_side"),
           });
-          ScreenManager.applyDefaultSbsZoom();
           break;
       }
 
@@ -744,7 +744,7 @@ export function playbackChange(is_active = false, screen_type = null) {
     case false:
       playbackIsActive = false;
       hideMeshes();
-      ScreenManager.zoom("reset");
+      ScreenManager.resetZoomPosition();
       break;
   }
 }

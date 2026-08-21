@@ -1,6 +1,27 @@
 import * as MAIN from "../index.js";
 import PanelsList from "./Panels.js";
 import { playerConfig } from "../playerConfig.js";
+import { loadPreference, savePreference } from "../browserPreferences.mjs";
+
+const ZOOM_PREFERENCE = "zoom";
+const LEGACY_ZOOM_STORAGE_KEY = "web-vr-video-player.zoom";
+const MAX_ZOOM = 180;
+
+function clampZoom(value) {
+    const zoom = Number(value);
+    return Number.isFinite(zoom) ? Math.min(Math.max(zoom, 0), MAX_ZOOM) : null;
+}
+
+function loadSavedZoom() {
+    const savedZoom = loadPreference(ZOOM_PREFERENCE, {
+        legacyStorageKey: LEGACY_ZOOM_STORAGE_KEY,
+    });
+    return savedZoom === null ? null : clampZoom(savedZoom);
+}
+
+function saveZoom(zoom) {
+    savePreference(ZOOM_PREFERENCE, zoom);
+}
 
 let isVRModeUsed = true;
 export let VRMode = "sbs";
@@ -36,6 +57,7 @@ export function registerObjectToDrag(obj, view, panelName) {
 }
 
 export function vrsessionend() {
+    resetZoomPosition();
     resetPosition("cameras");
     resetPosition("playMenuPanel");
     resetPosition("fileBrowserPanel");
@@ -55,36 +77,32 @@ export function resetPosition(ui) {
 }
 
 export function zoom(in_or_out, step = 10) {
-    const oldZoom = currentZoom;
-    let distance = 0;
+    let targetZoom = currentZoom;
     switch (in_or_out) {
         case "in":
-            if (currentZoom < 180) {
-                currentZoom += step;
-                distance = -step;
-            }
+            targetZoom = currentZoom + step;
             break;
         case "out":
-            if (currentZoom > 0) {
-                currentZoom -= step;
-                distance = step;
-            }
+            targetZoom = currentZoom - step;
             break;
         case "reset":
-            currentZoom = 0;
+            targetZoom = 0;
             break;
         default:
-            break;
+            return;
     }
+    setZoom(targetZoom, true);
+}
+
+function setZoom(targetZoom, persistPreference) {
+    const oldZoom = currentZoom;
+    currentZoom = clampZoom(targetZoom) ?? 0;
     if (oldZoom !== currentZoom) {
         for (let mesh in MAIN.meshes) {
-            if (in_or_out === "reset") {
+            if (currentZoom === 0) {
                 const temp = panels.meshes.panels
                     .find((element) => element.ui_name === mesh)
                     .position.clone();
-                if (currentZoom > 0) {
-                    temp.z += currentZoom;
-                }
                 temp.applyEuler(MAIN.meshes[mesh].rotation);
                 MAIN.meshes[mesh].position.copy(temp);
             } else {
@@ -92,22 +110,27 @@ export function zoom(in_or_out, step = 10) {
                     (element) => element.ui_name === mesh
                 ).position.clone();
                 temp.normalize();
-                MAIN.meshes[mesh].translateOnAxis(temp, distance);
+                MAIN.meshes[mesh].translateOnAxis(temp, oldZoom - currentZoom);
             }
         }
     }
+    if (persistPreference) {
+        saveZoom(currentZoom);
+    }
 }
 
-// Starting zoom is playback policy, but the screen manager owns the zoom
-// state. Set an absolute level so a repeated playback start cannot accumulate
-// zoom if a caller has not reset the screen first.
-export function applyDefaultSbsZoom() {
-    const zoomDifference = playerConfig.defaultSbsZoom - currentZoom;
-    if (zoomDifference > 0) {
-        zoom("in", zoomDifference);
-    } else if (zoomDifference < 0) {
-        zoom("out", -zoomDifference);
-    }
+// Restore the user's choice for every video. Before a choice has been saved,
+// retain the configured SBS-only behaviour and leave other modes at base size.
+export function applyPlaybackZoom() {
+    const savedZoom = loadSavedZoom();
+    const initialZoom = savedZoom ?? (VRMode === "sbs" ? playerConfig.defaultSbsZoom : 0);
+    setZoom(initialZoom, false);
+}
+
+// Playback transitions need a base mesh position, but must not erase the
+// browser preference that will be restored for the next selected video.
+export function resetZoomPosition() {
+    setZoom(0, false);
 }
 
 export function tilt(up_or_down, value = 0.01) {
@@ -228,7 +251,7 @@ export function stopDrag(view) {
 
 export function resetDrag(view) {
     if (MAIN.renderer.xr.isPresenting && view in objectsToDrag) {
-        zoom("reset");
+        resetZoomPosition();
         const readyList = [];
         objectsToDrag[view].forEach((obj) => {
             if (!(obj.panelName in readyList)) {
