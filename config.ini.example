@@ -13,4 +13,5 @@ thumbnails_url_prefix=/thumbnails
 
 [player]
 ; Initial SBS screen zoom, from 0 (base size) through 180.
+; Rebuild the browser bundle after changing player settings.
 default_sbs_zoom=100
