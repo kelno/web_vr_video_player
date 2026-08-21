@@ -13,7 +13,6 @@ export class JsonLoader {
   }
 
   async load() {
-    console.debug("Loading JSON Loader...");
     if (typeof this.json_file !== "string") {
       this.error = "Error: `json_file` must be valid string";
       this.status = "error";

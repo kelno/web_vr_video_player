@@ -98,9 +98,7 @@ window.addEventListener("touchend", () => {
 //
 
 function init() {
-  loadJsonLoader().then(() => {
-    console.debug("loadJsonLoader finished");
-  });
+  loadJsonLoader();
 
   ////////////////////////
   //  Basic Three Setup
