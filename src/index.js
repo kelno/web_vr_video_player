@@ -4,7 +4,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 import WebGL from "three/addons/capabilities/WebGL.js";
 
-import ThreeMeshUI from "three-mesh-ui";
+import ThreeMeshUI from "./ui/meshUi.js";
 import VRControl from "./vr/VRControl.js";
 
 import { PlayerPanel } from "./PlayerPanelUI.js";

@@ -2,9 +2,9 @@ import { Color } from "three";
 import {
     Block,
     Text,
-} from "three-mesh-ui";
+} from "./ui/meshUi.js";
 
-import deepDelete from "../node_modules/three-mesh-ui/src/utils/deepDelete.js";
+import clearUiChildren from "./ui/clearUiChildren.mjs";
 
 import FontJSON from "../assets/fonts/Roboto-Regular-msdf.json";
 import FontImage from "../assets/fonts/Roboto-Regular.png";
@@ -111,7 +111,7 @@ export default class SourcesSelectorPanel {
 
     refreshSources(deep_delete = true) {
         if (deep_delete) {
-            deepDelete(this.sourcesSelectorContainer);
+            clearUiChildren(this.sourcesSelectorContainer);
         }
         this.sourcesSelectorContainer.set(
             this.sourcesSelectorContainerAttributes

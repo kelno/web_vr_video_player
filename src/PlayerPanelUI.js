@@ -6,7 +6,7 @@ import {
     Block,
     Text,
     InlineBlock,
-} from "three-mesh-ui";
+} from "./ui/meshUi.js";
 
 import FontJSON from "../assets/fonts/Roboto-Regular-msdf.json";
 import FontImage from "../assets/fonts/Roboto-Regular.png";

@@ -1,4 +1,4 @@
-import { Block } from "three-mesh-ui";
+import { Block } from "../ui/meshUi.js";
 
 import * as MAIN from "../index.js";
 

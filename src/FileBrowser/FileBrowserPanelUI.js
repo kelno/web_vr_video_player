@@ -12,7 +12,7 @@ import {
     Text,
     InlineBlock,
     Keyboard,
-} from "three-mesh-ui";
+} from "../ui/meshUi.js";
 
 import ThumbnailBlock from "./ThumbnailBlock.js";
 
@@ -20,7 +20,7 @@ import Backspace from "../../assets/ui/keyboard/backspace.png";
 import Enter from "../../assets/ui/keyboard/enter.png";
 import Shift from "../../assets/ui/keyboard/shift.png";
 
-import deepDelete from "../../node_modules/three-mesh-ui/src/utils/deepDelete.js";
+import clearUiChildren from "../ui/clearUiChildren.mjs";
 
 import FontJSON from "../../assets/fonts/Roboto-Regular-msdf.json";
 import FontImage from "../../assets/fonts/Roboto-Regular.png";
@@ -1204,7 +1204,7 @@ export class FileBrowserPanel {
     regenerateFileBrowser() {
         this.thumbnailViewGeneration++;
         this.viewGeneratorFinished = true;
-        deepDelete(this.thumbsContainer);
+        clearUiChildren(this.thumbsContainer);
         this.listOfVideoThumbnailTextures.forEach((texture) => {
             texture.dispose();
         });
@@ -1363,7 +1363,7 @@ export class FileBrowserPanel {
     }
 
     regenerateFoldersButtons() {
-        deepDelete(this.foldersContainer);
+        clearUiChildren(this.foldersContainer);
         this.foldersContainer.set(this.foldersContainerAttributes);
         this.foldersButtons = [];
         this.generateFoldersButtons();
