@@ -110,12 +110,17 @@ export class FileBrowserPanel {
 
     BUTTONWIDTHHEIGHT = this.PANELMAXHEIGHT / this.FILES_ROWS - 0.5;
 
-    THUMBTEXTUREHEIGHT =
-        this.PANELMAXHEIGHT / this.FILES_ROWS -
-        (this.PANELMAXHEIGHT / this.FILES_ROWS) * 0.25;
     THUMBTEXTUREWIDTH =
         (this.PANELMAXWIDTH - this.PANELMAXWIDTH / 16) / this.FILES_PER_ROW -
         0.05;
+    THUMB_FRAME_PADDING = 0.025;
+
+    THUMB_CONTENT_HEIGHT =
+        this.PANELMAXHEIGHT / this.FILES_ROWS -
+        this.THUMB_FRAME_PADDING * 2;
+    THUMB_CONTENT_WIDTH = this.THUMBTEXTUREWIDTH - this.THUMB_FRAME_PADDING * 2;
+
+    THUMBTEXTUREHEIGHT = this.THUMB_CONTENT_HEIGHT * 0.75;
 
     thumbRowContainerAttributes = {
         width: this.PANELMAXWIDTH,
@@ -149,7 +154,10 @@ export class FileBrowserPanel {
             (this.PANELMAXWIDTH - this.PANELMAXWIDTH / 16) / this.FILES_PER_ROW,
         justifyContent: "start",
         contentDirection: "column",
-        padding: 0,
+        // Reserve a consistent frame around the thumbnail. Its background is
+        // transparent at rest and becomes the yellow hover indicator.
+        padding: this.THUMB_FRAME_PADDING,
+        backgroundOpacity: 0,
         hiddenOverflow: true,
         borderRadius: 0,
     };
@@ -157,7 +165,7 @@ export class FileBrowserPanel {
     textureAttributes(texture) {
         return {
             height: this.THUMBTEXTUREHEIGHT,
-            width: this.THUMBTEXTUREWIDTH,
+            width: this.THUMB_CONTENT_WIDTH,
             backgroundTexture: texture,
             borderRadius: 0,
         };
@@ -165,10 +173,8 @@ export class FileBrowserPanel {
 
     thumbTextContainerAttributes = {
         height:
-            this.PANELMAXHEIGHT / this.FILES_ROWS -
-            this.THUMBTEXTUREHEIGHT -
-            0.025,
-        width: this.THUMBTEXTUREWIDTH,
+            this.THUMB_CONTENT_HEIGHT - this.THUMBTEXTUREHEIGHT,
+        width: this.THUMB_CONTENT_WIDTH,
         backgroundOpacity: 0,
         bestFit: "shrink",
     };
@@ -238,6 +244,12 @@ export class FileBrowserPanel {
     idleState = {
         state: "idle",
         attributes: this.idleStateAttributes,
+    };
+
+    thumbnailIdleStateAttributes = {
+        offset: 0.035,
+        backgroundOpacity: 0,
+        fontColor: new Color(0xffffff),
     };
 
     folderActiveIdleStateAttributes = {
@@ -1065,7 +1077,7 @@ export class FileBrowserPanel {
                         : "1",
                     this.selectedAttributes,
                     this.hoveredStateAttributes,
-                    this.idleStateAttributes
+                    this.thumbnailIdleStateAttributes
                 );
 
                 thumbsContainerButtonsRow.add(thumb);
