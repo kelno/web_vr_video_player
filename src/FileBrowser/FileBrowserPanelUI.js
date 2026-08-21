@@ -95,8 +95,10 @@ export class FileBrowserPanel {
 
     viewGeneratorThumbs = [];
     viewGeneratorThumbsIterator = 0;
-    viewGeneratorInProgress = false;
+    viewGeneratorPending = 0;
     viewGeneratorFinished = true;
+    thumbnailViewGeneration = 0;
+    THUMBNAIL_LOAD_CONCURRENCY = 4;
 
     loader = new TextureLoader();
 
@@ -1026,9 +1028,11 @@ export class FileBrowserPanel {
 
     generateView() {
         let endOfFiles = false;
+        this.thumbnailViewGeneration++;
         this.viewGeneratorThumbs = [];
         this.listOfVideoThumbnailTextures = [];
         this.viewGeneratorThumbsIterator = 0;
+        this.viewGeneratorPending = 0;
         let iterate =
             this.CURRENT_PAGE > 0
                 ? this.FILES_PER_ROW * this.FILES_ROWS * this.CURRENT_PAGE
@@ -1081,77 +1085,72 @@ export class FileBrowserPanel {
     }
 
     generateThumbnails() {
-        if (this.viewGeneratorInProgress === false) {
-            if (
-                this.viewGeneratorThumbs[this.viewGeneratorThumbsIterator] &&
-                this.viewGeneratorFinished === false
-            ) {
-                this.viewGeneratorInProgress = true;
-                let thumb =
-                    this.viewGeneratorThumbs[this.viewGeneratorThumbsIterator]
-                        .fileThumbnail;
-                this.loader
-                    .loadAsync(thumb, undefined)
-                    .then((image) => {
-                        if (
-                            thumb ===
-                            this.viewGeneratorThumbs[
-                                this.viewGeneratorThumbsIterator
-                            ].fileThumbnail
-                        ) {
-                            let inlineBlock = new InlineBlock(
-                                this.textureAttributes(image)
-                            );
-                            this.listOfVideoThumbnailTextures.push(
-                                inlineBlock.getBackgroundTexture()
-                            );
-                            this.viewGeneratorThumbs[
-                                this.viewGeneratorThumbsIterator
-                            ].add(
-                                inlineBlock,
-                                new Block(
-                                    this.thumbTextContainerAttributes
-                                ).add(
-                                    new Text(
-                                        this.thumbTextAttributes(
-                                            this.viewGeneratorThumbs[
-                                                this.viewGeneratorThumbsIterator
-                                            ].fileNameButton
-                                        )
-                                    )
-                                )
-                            );
-                            this.viewGeneratorThumbsIterator++;
-                        }
-                        this.viewGeneratorInProgress = false;
-                    })
-                    .catch((error) => {
-                        console.error("Failed to load thumbnail:", thumb);
-                        this.viewGeneratorThumbs[
-                            this.viewGeneratorThumbsIterator
-                        ].add(
-                            new InlineBlock(
-                                this.textureAttributes(
-                                    this.defaultVideoThumbnail
-                                )
-                            ),
-                            new Block(this.thumbTextContainerAttributes).add(
-                                new Text(
-                                    this.thumbTextAttributes(
-                                        this.viewGeneratorThumbs[
-                                            this.viewGeneratorThumbsIterator
-                                        ].fileNameButton
-                                    )
-                                )
-                            )
-                        );
-                        this.viewGeneratorThumbsIterator++;
-                        this.viewGeneratorInProgress = false;
-                    });
-            } else {
-                this.viewGeneratorFinished = true;
-            }
+        if (this.viewGeneratorFinished) {
+            return;
         }
+
+        while (
+            this.viewGeneratorPending < this.THUMBNAIL_LOAD_CONCURRENCY &&
+            this.viewGeneratorThumbsIterator < this.viewGeneratorThumbs.length
+        ) {
+            const thumbnailBlock =
+                this.viewGeneratorThumbs[this.viewGeneratorThumbsIterator++];
+            const thumbnailUrl = thumbnailBlock.fileThumbnail;
+            const viewGeneration = this.thumbnailViewGeneration;
+            this.viewGeneratorPending++;
+
+            this.loader
+                .loadAsync(thumbnailUrl, undefined)
+                .then((image) => {
+                    if (viewGeneration !== this.thumbnailViewGeneration) {
+                        image.dispose();
+                        return;
+                    }
+
+                    this.addThumbnailToBlock(thumbnailBlock, image, true);
+                })
+                .catch(() => {
+                    if (viewGeneration !== this.thumbnailViewGeneration) {
+                        return;
+                    }
+
+                    console.error("Failed to load thumbnail:", thumbnailUrl);
+                    this.addThumbnailToBlock(
+                        thumbnailBlock,
+                        this.defaultVideoThumbnail,
+                        false
+                    );
+                })
+                .finally(() => {
+                    if (viewGeneration !== this.thumbnailViewGeneration) {
+                        return;
+                    }
+
+                    this.viewGeneratorPending--;
+                    if (
+                        this.viewGeneratorThumbsIterator ===
+                            this.viewGeneratorThumbs.length &&
+                        this.viewGeneratorPending === 0
+                    ) {
+                        this.viewGeneratorFinished = true;
+                    }
+                });
+        }
+    }
+
+    addThumbnailToBlock(thumbnailBlock, texture, shouldDisposeTexture) {
+        const inlineBlock = new InlineBlock(this.textureAttributes(texture));
+        if (shouldDisposeTexture) {
+            this.listOfVideoThumbnailTextures.push(
+                inlineBlock.getBackgroundTexture()
+            );
+        }
+        thumbnailBlock.add(
+            inlineBlock,
+            new Block(this.thumbTextContainerAttributes).add(
+                new Text(this.thumbTextAttributes(thumbnailBlock.fileNameButton))
+            )
+        );
     }
 
     sortFiles(by, order) {
@@ -1203,6 +1202,7 @@ export class FileBrowserPanel {
     }
 
     regenerateFileBrowser() {
+        this.thumbnailViewGeneration++;
         this.viewGeneratorFinished = true;
         deepDelete(this.thumbsContainer);
         this.listOfVideoThumbnailTextures.forEach((texture) => {
