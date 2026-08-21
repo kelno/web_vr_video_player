@@ -1,7 +1,7 @@
 # Example Nginx site for the self-contained dist/ release directory.
 #
 # Replace the server name, certificate settings, and filesystem paths. The
-# URL paths below must match site_url_prefix, videos_url_prefix, and
+# URL paths below must match the [web] site_url_prefix, videos_url_prefix, and
 # thumbnails_url_prefix in config.ini before generating dist/files.json.
 
 server {

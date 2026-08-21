@@ -119,6 +119,12 @@ Git Bash. Alternatively, run the Python generator directly:
 python scripts/generate_json.py config.ini
 ```
 
+`config.ini` separates these concerns: `[library]` holds local filesystem paths
+used by Python tooling and the development server; `[web]` defines browser and
+Nginx URL paths; `[player]` contains browser-safe player preferences. Existing
+configurations using `[videos]` must move their local paths to `[library]` and
+their URL prefixes to `[web]`.
+
 ### Local development
 
 Run the HTTPS development server from the repository root:

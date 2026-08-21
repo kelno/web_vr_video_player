@@ -1,10 +1,12 @@
-[videos]
-; URL path where Nginx serves the player release. Use / for a dedicated host.
-site_url_prefix=/vr-player
-; Filesystem directory Nginx serves at videos_url_prefix.
+[library]
+; Local paths used by the Python catalogue/thumbnail tools and npm run dev.
 videos_path=/mnt/hdd/videos
-; Filesystem directory Nginx serves at thumbnails_url_prefix.
 thumbnails_path=/mnt/hdd/thumbnails
+
+[web]
+; Browser and Nginx URL contract. These values contain no local filesystem paths.
+; site_url_prefix is where Nginx serves dist/. Use / for a dedicated host.
+site_url_prefix=/vr-player
 ; Media mounts below site_url_prefix. These must start with /.
 videos_url_prefix=/media
 thumbnails_url_prefix=/thumbnails

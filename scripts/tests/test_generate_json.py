@@ -35,15 +35,17 @@ class GenerateCatalogueTests(unittest.TestCase):
             (videos / "Category" / "VR test.mp4").touch()
             (thumbnails / "Category" / "VR test.jpg").touch()
             config = configparser.ConfigParser()
-            config["videos"] = {
+            config["library"] = {
                 "videos_path": str(videos),
                 "thumbnails_path": str(thumbnails),
+            }
+            config["web"] = {
                 "site_url_prefix": "/vr-player",
                 "videos_url_prefix": "/media",
                 "thumbnails_url_prefix": "/thumbnails",
             }
 
-            categories = generate_category_entries(config["videos"])
+            categories = generate_category_entries(config)
             entry = categories["Category"][0]
             self.assertEqual(entry["src"], "/vr-player/media/Category/VR%20test.mp4")
             self.assertEqual(entry["thumbnail"], "/vr-player/thumbnails/Category/VR%20test.jpg")

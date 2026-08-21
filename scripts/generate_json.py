@@ -60,28 +60,31 @@ def join_url_prefix(site_prefix: str, route_prefix: str) -> str:
     return f"{site}{route}" or "/"
 
 
-def load_config(config_path: Path) -> configparser.SectionProxy:
-    """Read and validate the [videos] section from the local configuration."""
+def load_config(config_path: Path) -> configparser.ConfigParser:
+    """Read and validate the separate local-library and web configuration."""
     config = configparser.ConfigParser()
     if not config.read(config_path):
         raise FileNotFoundError(f"Configuration file not found: {config_path}")
-    if "videos" not in config:
-        raise ValueError("Configuration must contain a [videos] section.")
-    section = config["videos"]
+    for section_name in ("library", "web"):
+        if section_name not in config:
+            raise ValueError(f"Configuration must contain a [{section_name}] section.")
+    section = config["library"]
     for option in ("videos_path", "thumbnails_path"):
         if not section.get(option):
-            raise ValueError(f"Missing required [videos] value: {option}")
-    return section
+            raise ValueError(f"Missing required [library] value: {option}")
+    return config
 
 
-def generate_category_entries(config: configparser.SectionProxy) -> dict[str, list[dict[str, str]]]:
+def generate_category_entries(config: configparser.ConfigParser) -> dict[str, list[dict[str, str]]]:
     """Build category entries using media roots and server URL prefixes only."""
-    videos_dir = Path(config["videos_path"])
-    thumbnails_dir = Path(config["thumbnails_path"])
-    site_url_prefix = config.get("site_url_prefix", "/")
-    videos_url_prefix = join_url_prefix(site_url_prefix, config.get("videos_url_prefix", "/media"))
+    library = config["library"]
+    web = config["web"]
+    videos_dir = Path(library["videos_path"])
+    thumbnails_dir = Path(library["thumbnails_path"])
+    site_url_prefix = web.get("site_url_prefix", "/")
+    videos_url_prefix = join_url_prefix(site_url_prefix, web.get("videos_url_prefix", "/media"))
     thumbnails_url_prefix = join_url_prefix(
-        site_url_prefix, config.get("thumbnails_url_prefix", "/thumbnails")
+        site_url_prefix, web.get("thumbnails_url_prefix", "/thumbnails")
     )
     if not videos_dir.is_dir():
         raise FileNotFoundError(f"Videos directory not found: {videos_dir}")

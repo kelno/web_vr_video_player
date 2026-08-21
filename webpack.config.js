@@ -67,8 +67,9 @@ function joinUrlPrefix(sitePrefix, routePrefix) {
 module.exports = (env) => {
   const isDevelopment = env.development === true;
   const config = readConfig();
-  const videosConfig = config.videos ?? {};
-  const sitePrefix = siteUrlPrefix(videosConfig.site_url_prefix);
+  const libraryConfig = config.library ?? {};
+  const webConfig = config.web ?? {};
+  const sitePrefix = siteUrlPrefix(webConfig.site_url_prefix);
   const assetPublicPath = sitePrefix ? `${sitePrefix}/` : "/";
 
   const indexConfig = {
@@ -136,14 +137,14 @@ module.exports = (env) => {
       }
     };
     addMediaMount(
-      videosConfig.videos_path,
-      joinUrlPrefix(sitePrefix, videosConfig.videos_url_prefix || "/media"),
+      libraryConfig.videos_path,
+      joinUrlPrefix(sitePrefix, webConfig.videos_url_prefix || "/media"),
     );
     addMediaMount(
-      videosConfig.thumbnails_path,
+      libraryConfig.thumbnails_path,
       joinUrlPrefix(
         sitePrefix,
-        videosConfig.thumbnails_url_prefix || "/thumbnails",
+        webConfig.thumbnails_url_prefix || "/thumbnails",
       ),
     );
 

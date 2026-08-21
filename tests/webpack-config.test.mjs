@@ -5,16 +5,20 @@ import test from "node:test";
 const require = createRequire(import.meta.url);
 const { parseIni, playerConfig } = require("../webpack.config.js");
 
-test("reads the player zoom separately from video serving settings", () => {
+test("keeps local library paths separate from web and player settings", () => {
     const config = parseIni(`
-[videos]
+[library]
 videos_path=/library
+
+[web]
+site_url_prefix=/vr-player
 
 [player]
 default_sbs_zoom=75.5
 `);
 
-    assert.equal(config.videos.videos_path, "/library");
+    assert.equal(config.library.videos_path, "/library");
+    assert.equal(config.web.site_url_prefix, "/vr-player");
     assert.deepEqual(playerConfig(config), { defaultSbsZoom: 75.5 });
 });
 

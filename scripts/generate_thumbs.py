@@ -9,8 +9,8 @@ config_path = os.path.join(os.path.dirname(__file__), '../config.ini')
 print(f"Reading config from: {config_path}")
 config.read(config_path)
 
-videos_path = Path(config['videos']['videos_path'])
-thumbnails_path = Path(config['videos']['thumbnails_path'])
+videos_path = Path(config['library']['videos_path'])
+thumbnails_path = Path(config['library']['thumbnails_path'])
 
 print(f"Videos path: {videos_path}")
 print(f"Thumbnails path: {thumbnails_path}")
