@@ -792,7 +792,7 @@ export class PlayerPanel {
             state: "selected",
             attributes: this.selectedAttributes,
             onSet: () => {
-                ScreenManager.zoom("reset");
+                ScreenManager.resetZoomToConfiguredDefault();
             },
         });
         zoomResetButton.setupState(this.hoveredState);

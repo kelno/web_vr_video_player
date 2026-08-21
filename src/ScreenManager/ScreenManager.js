@@ -127,6 +127,12 @@ export function applyPlaybackZoom() {
     setZoom(initialZoom, false);
 }
 
+// The player reset control restores the deployment's configured starting zoom
+// and makes it the new browser preference for later videos.
+export function resetZoomToConfiguredDefault() {
+    setZoom(playerConfig.defaultSbsZoom, true);
+}
+
 // Playback transitions need a base mesh position, but must not erase the
 // browser preference that will be restored for the next selected video.
 export function resetZoomPosition() {
