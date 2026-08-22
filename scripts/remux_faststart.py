@@ -3,8 +3,8 @@
 
 The default mode is read-only. MP4 files are checked for fast-start metadata.
 MKV files can be remuxed to MP4 with --apply, but only when all media streams
-can be preserved. Successful MKV conversions replace their sources by default;
---keep-original retains the source. --force permits a video/audio-only
+can be preserved. Successful conversions replace their sources by default;
+--keep-original retains each source. --force permits a video/audio-only
 conversion. No command in this script re-encodes media.
 """
 
@@ -102,7 +102,15 @@ def stream_signature(streams: list[dict[str, str]]) -> list[tuple[str, str]]:
     )
 
 
-def remux_to_mp4(source: Path, output: Path, ffmpeg: str, ffprobe: str, *, force: bool = False) -> None:
+def remux_to_mp4(
+    source: Path,
+    output: Path,
+    ffmpeg: str,
+    ffprobe: str,
+    *,
+    force: bool = False,
+    original_backup: Path | None = None,
+) -> None:
     """Stream-copy a file to fast-start MP4 and verify its expected streams."""
     temporary = output.with_name(f".{output.stem}.faststart-tmp{output.suffix}")
     if temporary.exists():
@@ -121,7 +129,16 @@ def remux_to_mp4(source: Path, output: Path, ffmpeg: str, ffprobe: str, *, force
             raise RuntimeError("ffmpeg output still needs fast-start remuxing.")
         if stream_signature(probe_streams(temporary, ffprobe)) != stream_signature(expected):
             raise RuntimeError("ffmpeg output did not preserve the expected media streams.")
-        os.replace(temporary, output)
+        if original_backup is not None:
+            if original_backup.exists():
+                raise FileExistsError(f"Original backup already exists: {original_backup}")
+            os.replace(source, original_backup)
+        try:
+            os.replace(temporary, output)
+        except OSError:
+            if original_backup is not None and original_backup.exists() and not source.exists():
+                os.replace(original_backup, source)
+            raise
     finally:
         temporary.unlink(missing_ok=True)
 
@@ -140,6 +157,11 @@ def mkv_output_path(path: Path) -> Path:
     return path.with_suffix(".mp4")
 
 
+def original_backup_path(path: Path) -> Path:
+    """Return a retained MP4 source path that is ignored by future scans."""
+    return path.with_name(f"{path.name}.original")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", type=Path, help="Directory containing MP4 or MKV files")
@@ -148,7 +170,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--keep-original",
         action="store_true",
-        help="Keep an MKV source after its replacement MP4 is validated",
+        help="Keep each source; retained MP4s are renamed with a .original suffix",
     )
     parser.add_argument("--recursive", action="store_true", help="Also scan subdirectories")
     parser.add_argument("--ffmpeg", default="ffmpeg", help="ffmpeg executable to run")
@@ -225,14 +247,21 @@ def main() -> int:
         if not args.apply:
             print(f"NEEDS REMUX  {path}")
             continue
+        backup = original_backup_path(path) if args.keep_original else None
+        if backup is not None and backup.exists():
+            print(f"SKIP ORIGINAL EXISTS  {path} -> {backup}")
+            continue
         print(f"REMUXING  {path}")
         try:
-            remux_to_mp4(path, path, args.ffmpeg, args.ffprobe)
+            remux_to_mp4(path, path, args.ffmpeg, args.ffprobe, original_backup=backup)
         except (OSError, RuntimeError, ValueError, json.JSONDecodeError, subprocess.CalledProcessError) as error:
             print(f"ERROR  {path}: {error}")
             continue
         remuxed += 1
-        print(f"REMUXED  {path}")
+        if backup is None:
+            print(f"REMUXED  {path}")
+        else:
+            print(f"REMUXED (KEPT SOURCE)  {path}; original at {backup}")
 
     if args.apply:
         print(f"Remuxed {remuxed} file(s).")

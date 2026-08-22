@@ -13,6 +13,7 @@ from remux_faststart import (
     mkv_copy_risks,
     mkv_output_path,
     needs_faststart,
+    original_backup_path,
 )
 
 
@@ -72,3 +73,11 @@ class FaststartTests(unittest.TestCase):
 
     def test_mkv_output_keeps_original_source(self):
         self.assertEqual(mkv_output_path(Path("clip.mkv")), Path("clip.mp4"))
+
+    def test_original_backup_is_not_a_scanned_video_extension(self):
+        with tempfile.TemporaryDirectory() as directory:
+            original = Path(directory) / "clip.mp4"
+            backup = original_backup_path(original)
+            backup.touch()
+            self.assertEqual(backup, Path(directory) / "clip.mp4.original")
+            self.assertEqual(find_videos(Path(directory), recursive=False), [])

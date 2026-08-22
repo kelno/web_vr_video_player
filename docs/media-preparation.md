@@ -31,8 +31,11 @@ without re-encoding audio or video. An MKV is deleted only after its MP4 output
 has been validated, and multiple audio tracks are preserved. MKVs with
 incompatible subtitle, attachment, or data streams are skipped and explained.
 
-Add `--keep-original` to retain source MKVs. To deliberately create a
-video/audio-only MP4 from incompatible files, use `--force` with `--apply`:
+Add `--keep-original` to retain every source file. Retained MKVs keep their
+original names; retained MP4s are saved as `filename.mp4.original` after the
+validated fast-start MP4 replaces `filename.mp4`. Existing `.original` backups
+are never overwritten. To deliberately create a video/audio-only MP4 from
+incompatible files, use `--force` with `--apply`:
 
 ```powershell
 python scripts/remux_faststart.py D:\download\my_library --recursive --apply --force
